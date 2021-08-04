@@ -194,7 +194,11 @@ bool PushAndSwap::resolve(Plan& plan, const int r, const int s, Nodes& U,
     // case 1. push
     auto p = getShortestPath(_r, ideal_loc_s, occupied_now);
     // required swap
-    if (p.empty()) halt("never-happen situations");
+    if (p.empty()) {
+      // agents at goal
+      info("        failed");
+      return false;
+    }
     // _r tries to move p[1]
     if (occupied_now[p[1]->id] != NIL) {
       Nodes obs = U;
@@ -404,6 +408,7 @@ Path PushAndSwap::getShortestPath(const int id, Node* s,
 {
   Nodes p = {s};
   Node* g = P->getGoal(id);
+  if (s == g) return {};
   while (*(p.end() - 1) != g) {
     Node* v = *(p.end() - 1);
     p.push_back(*std::min_element(v->neighbor.begin(), v->neighbor.end(),

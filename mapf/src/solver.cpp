@@ -3,8 +3,6 @@
 #include <fstream>
 #include <iomanip>
 
-#include "../include/lib_cbs.hpp"
-
 MinimumSolver::MinimumSolver(Problem* _P)
   : solver_name(""),
     P(_P),
@@ -45,6 +43,7 @@ Solver::Solver(Problem* _P)
     verbose(false),
     LB_soc(0),
     LB_makespan(0),
+    log_short(false),
     distance_table(P->getNum(),
                    std::vector<int>(G->getNodesSize(), max_timestep)),
     distance_table_p(nullptr)
@@ -53,7 +52,6 @@ Solver::Solver(Problem* _P)
 
 Solver::~Solver()
 {
-  if (P->isInitializedInstance()) LibCBS::MDD::PURE_MDD_TABLE.clear();
 }
 
 // -------------------------------
@@ -194,6 +192,8 @@ void Solver::makeLogBasicInfo(std::ofstream& log)
 
 void Solver::makeLogSolution(std::ofstream& log)
 {
+  if (log_short) return;
+
   log << "starts=";
   for (int i = 0; i < P->getNum(); ++i) {
     Node* v = P->getStart(i);

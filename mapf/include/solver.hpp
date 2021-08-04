@@ -60,6 +60,7 @@ private:
   bool verbose;      // true -> print additional info
   int LB_soc;        // lower bound of soc
   int LB_makespan;   // lower bound of makespan
+  bool log_short;    // true -> cannot visualize the result, default: false
 
   // distance to goal
 protected:
@@ -122,6 +123,7 @@ protected:
 public:
   virtual void setParams(int argc, char* argv[]){};
   void setVerbose(bool _verbose) { verbose = _verbose; }
+  void setLogShort(bool _log_short) { log_short = _log_short; }
 protected:
   // used for set underlying solver options
   static void setSolverOption(std::shared_ptr<Solver> solver,
