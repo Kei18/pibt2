@@ -5,7 +5,7 @@
 const std::string PushAndSwap::SOLVER_NAME = "PushAndSwap";
 
 PushAndSwap::PushAndSwap(Problem* _P)
-    : Solver(_P), flg_compress(true), disable_dist_init(false)
+  : Solver(_P), flg_compress(true), disable_dist_init(false), emergency_stop(false)
 {
   solver_name = PushAndSwap::SOLVER_NAME;
 }
@@ -52,6 +52,9 @@ void PushAndSwap::run()
     // check limitation
     if (overCompTime()) return;
   }
+
+  if (emergency_stop) solution.clear();
+
 
   // compress solution
   if (flg_compress) {
@@ -102,6 +105,8 @@ bool PushAndSwap::push(Plan& plan, const int id, Nodes& U,
 bool PushAndSwap::swap(Plan& plan, const int r, Nodes& U,
                        std::vector<int>& occupied_now)
 {
+  if (emergency_stop) return false;
+
   auto p_star = getShortestPath(r, plan.last(r), occupied_now);
   if (p_star.size() <= 1) return true;  // for safety
   const int s = occupied_now[p_star[1]->id];
@@ -181,6 +186,8 @@ bool PushAndSwap::swap(Plan& plan, const int r, Nodes& U,
 bool PushAndSwap::resolve(Plan& plan, const int r, const int s, Nodes& U,
                           std::vector<int>& occupied_now)
 {
+  if (emergency_stop) return false;
+
   info("      resolve operation for", r);
   // error check
   if (!inArray(plan.last(r), plan.last(s)->neighbor))
@@ -188,9 +195,16 @@ bool PushAndSwap::resolve(Plan& plan, const int r, const int s, Nodes& U,
 
   Node* ideal_loc_s = plan.last(r);
 
+  std::vector<int> _r_list;
   while (occupied_now[ideal_loc_s->id] != NIL) {
     const int _r = occupied_now[ideal_loc_s->id];
     if (_r == NIL) break;
+    // avoid eternal loop
+    if (inArray(_r, _r_list)) {
+      info("        failed, eternal loop");
+      return false;
+    }
+    _r_list.push_back(_r);
     // case 1. push
     auto p = getShortestPath(_r, ideal_loc_s, occupied_now);
     // required swap
@@ -228,6 +242,8 @@ bool PushAndSwap::resolve(Plan& plan, const int r, const int s, Nodes& U,
 bool PushAndSwap::multiPush(Plan& plan, const int r, const int s, const Path& p,
                             std::vector<int>& occupied_now)
 {
+  if (emergency_stop) return false;
+
   const int p_size = p.size();
   if (p_size == 0) halt("path is empty");
 
@@ -277,6 +293,8 @@ void PushAndSwap::checkConsistency(Plan& plan, std::vector<int>& occupied_now)
 bool PushAndSwap::clear(Plan& plan, Node* v, const int r, const int s,
                         std::vector<int>& occupied_now)
 {
+  if (emergency_stop) return false;
+
   info("      clear operation for", r, "at v=", v->id);
   auto getUnoccupiedNodes = [&]() {
     Nodes nodes;
@@ -377,6 +395,12 @@ void PushAndSwap::updatePlan(const int id, Node* next_node, Plan& plan,
   // error check
   if (occupied_now[plan.last(id)->id] != id) halt("invalid update");
   if (occupied_now[next_node->id] != NIL) halt("vertex conflict");
+  if (!(next_node == plan.last(id) ||
+        inArray(next_node, plan.last(id)->neighbor))) {
+    warn("invalid move due to clear operation");
+    emergency_stop = true;
+    return;
+  }
 
   // update occupancy
   occupied_now[plan.last(id)->id] = NIL;
@@ -518,6 +542,7 @@ Plan PushAndSwap::compress(const Plan& plan)
       }
     }
     new_plan.add(config);
+    if (new_plan.getMakespan() > max_timestep) break;
   }
   return new_plan;
 }

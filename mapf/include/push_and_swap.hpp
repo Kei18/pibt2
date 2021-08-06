@@ -19,6 +19,7 @@ private:
   bool flg_compress;          // whether to compress solution
   bool disable_dist_init;     // prioritization depending on distance
   Nodes nodes_with_many_neighbors;  // nodes of degree >= 3
+  bool emergency_stop;
 
   // used in occupancy
   static constexpr int NIL = -1;
@@ -31,6 +32,9 @@ private:
 
   // swap operation
   bool swap(Plan& plan, const int i, Nodes& U, std::vector<int>& occupied_now);
+  bool swap(Plan& plan, const int i, Nodes& U, std::vector<int>& occupied_now,
+            std::vector<int>& recursive_list);
+
 
   // improve solution quality, see
   Plan compress(const Plan& plan);

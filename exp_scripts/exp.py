@@ -35,7 +35,28 @@ def read_result(filename):
 
 MAX_TIMESTEP = 1000
 MAX_COMP_TIME = 30000
-SOLVERS = ["PIBT", "HCA", "PIBT_PLUS"]
+SOLVERS = [
+    "PIBT",
+    "HCA",
+    "PIBT_PLUS",
+    "PushAndSwap",
+    "PushAndSwap --no-compress"
+]
+MAP_NAMES = [
+    # small
+    "empty-8-8.map",
+    "random-32-32-20.map",
+
+    # large
+    # "empty-48-48.map",
+    # "random-64-64-20.map",
+    # "warehouse-20-40-10-2-2.map",
+    # "Berlin_1_256.map",
+    # "Paris_1_256.map",
+    # "brc202d.map",
+    # "den520d.map",
+    # "ost003d.map",
+]
 
 if __name__ == '__main__':
     r_scen = re.compile(r"\d+\t.+\.map\t\d+\t\d+\t(\d+)\t(\d+)\t(\d+)\t(\d+)\t.+")
@@ -71,6 +92,9 @@ if __name__ == '__main__':
                 map_name = f"{str(m.group(1))}.map"
                 scen_num = int(m.group(2))
 
+            if map_name not in MAP_NAMES:
+               continue
+
             # extract starts and goals
             starts_goals_str = []
             with open(scen_file, 'r') as f:
@@ -83,8 +107,11 @@ if __name__ == '__main__':
                         x_g = int(m_scen.group(4))
                         starts_goals_str.append(f"{y_s},{x_s},{y_g},{x_g}")
 
+            print(f"solver={solver}, map_name={map_name}, scen_num={scen_num},"
+                  f" max_num_agents={len(starts_goals_str)}")
+
             # increments number of agents
-            for num_agents in range(2, len(starts_goals_str) + 1):
+            for num_agents in range(10, len(starts_goals_str) + 1, 10):
                 # create instance
                 with open(ins_file, 'w') as f_write:
                     f_write.write(f'map_file={map_name}\n')
