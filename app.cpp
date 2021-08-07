@@ -11,7 +11,7 @@
 #include <vector>
 
 void printHelp();
-std::unique_ptr<Solver> getSolver(const std::string solver_name, Problem* P,
+std::unique_ptr<Solver> getSolver(const std::string solver_name, MAPF_Instance* P,
                                   bool verbose, int argc, char* argv[]);
 
 int main(int argc, char* argv[])
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
   }
 
   // set problem
-  Problem P = Problem(instance_file);
+  auto P = MAPF_Instance(instance_file);
 
   // set max computation time (otherwise, use param in instance_file)
   if (max_comp_time != -1) P.setMaxCompTime(max_comp_time);
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-std::unique_ptr<Solver> getSolver(const std::string solver_name, Problem* P,
+std::unique_ptr<Solver> getSolver(const std::string solver_name, MAPF_Instance* P,
                                   bool verbose, int argc, char* argv[])
 {
   std::unique_ptr<Solver> solver;

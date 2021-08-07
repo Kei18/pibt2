@@ -38,7 +38,7 @@ private:
   std::vector<bool> table_goals;
 
 public:
-  HCA(Problem* _P);
+  HCA(MAPF_Instance* _P);
   ~HCA(){};
 
   void setParams(int argc, char* argv[]);

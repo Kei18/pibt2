@@ -8,7 +8,7 @@
 
 const std::string PIBT_PLUS::SOLVER_NAME = "PIBT_PLUS";
 
-PIBT_PLUS::PIBT_PLUS(Problem* _P) : Solver(_P)
+PIBT_PLUS::PIBT_PLUS(MAPF_Instance* _P) : Solver(_P)
 {
   solver_name = SOLVER_NAME;
   comp_time_complement = 0;
@@ -23,9 +23,9 @@ void PIBT_PLUS::run()
   }
 
   // solve by PIBT
-  Problem _P = Problem(P, P->getConfigStart(), P->getConfigGoal(),
-                       max_comp_time, LB_makespan);
-  std::unique_ptr<Solver> init_solver = std::make_unique<PIBT>(&_P);
+  auto _P = MAPF_Instance(P, P->getConfigStart(), P->getConfigGoal(),
+                          max_comp_time, LB_makespan);
+  auto init_solver = std::make_unique<PIBT>(&_P);
   init_solver->setDistanceTable((distance_table_p == nullptr)
                                 ? &distance_table
                                 : distance_table_p);
@@ -41,7 +41,7 @@ void PIBT_PLUS::run()
     auto t_complement = Time::now();
 
     // solved by Push & Swap
-    Problem _Q = Problem(P, solution.last(), P->getConfigGoal(),
+    auto _Q = MAPF_Instance(P, solution.last(), P->getConfigGoal(),
                          getRemainedTime(), max_timestep - LB_makespan);
     auto comp_solver = std::make_shared<PushAndSwap>(&_Q);
 

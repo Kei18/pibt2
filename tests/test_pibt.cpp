@@ -4,7 +4,7 @@
 
 TEST(PIBT, solve)
 {
-  Problem P = Problem("../tests/instances/example.txt");
+  auto P = MAPF_Instance("../tests/instances/example.txt");
   auto solver = std::make_unique<PIBT>(&P);
   solver->solve();
 

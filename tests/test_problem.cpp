@@ -3,9 +3,9 @@
 
 #include "gtest/gtest.h"
 
-TEST(Problem, loading)
+TEST(MAPF_Instance, loading)
 {
-  Problem P = Problem("../tests/instances/toy_problem.txt");
+  auto P = MAPF_Instance("../tests/instances/toy_problem.txt");
   Graph* G = P.getG();
 
   ASSERT_EQ(P.getNum(), 2);
@@ -23,9 +23,9 @@ TEST(Problem, loading)
   ASSERT_EQ(goals[1], G->getNode(0, 1));
 }
 
-TEST(Problem, plan)
+TEST(MAPF_Instance, plan)
 {
-  Problem P = Problem("../tests/instances/toy_problem.txt");
+  auto P = MAPF_Instance("../tests/instances/toy_problem.txt");
   Graph* G = P.getG();
 
   Plan plan0;
@@ -41,4 +41,25 @@ TEST(Problem, plan)
   plan1.add(c1_0);
   plan1.add(c1_1);
   ASSERT_FALSE(plan1.validate(&P));
+}
+
+TEST(MAPD_Instance, load)
+{
+  auto P = MAPD_Instance("../tests/instances/toy_mapd.txt");
+
+  auto init_pos = P.getStart(0)->pos;
+
+  ASSERT_TRUE(init_pos.x == 1 && init_pos.y == 1);
+  ASSERT_TRUE(P.getTaskFrequency() == 1);
+  ASSERT_TRUE(P.getTaskNum() == 10);
+  ASSERT_TRUE(P.getCurrentTimestep() == 0);
+  ASSERT_TRUE(int(P.getOpenTasks().size()) == 1);
+  ASSERT_TRUE(int(P.getClosedTasks().size()) == 0);
+
+  for (int t = 0; t < P.getTaskNum() + 1; ++t) {
+    // update
+    P.update();
+    ASSERT_TRUE(P.getCurrentTimestep() == t + 1);
+    ASSERT_TRUE(int(P.getOpenTasks().size()) <= P.getTaskNum());
+  }
 }

@@ -2,7 +2,7 @@
 
 const std::string PIBT::SOLVER_NAME = "PIBT";
 
-PIBT::PIBT(Problem* _P)
+PIBT::PIBT(MAPF_Instance* _P)
     : Solver(_P),
       occupied_now(Agents(G->getNodesSize(), nullptr)),
       occupied_next(Agents(G->getNodesSize(), nullptr))

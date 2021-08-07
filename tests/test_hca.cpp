@@ -4,7 +4,7 @@
 
 TEST(HCA, solve)
 {
-  Problem P = Problem("../tests/instances/example.txt");
+  auto P = MAPF_Instance("../tests/instances/example.txt");
   auto solver = std::make_unique<HCA>(&P);
   solver->solve();
 

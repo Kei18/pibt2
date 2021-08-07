@@ -5,8 +5,51 @@
 
 #include "../include/util.hpp"
 
-Problem::Problem(const std::string& _instance)
-    : instance(_instance), instance_initialized(true)
+Problem::Problem
+(std::string _instance,
+ Graph* _G, std::mt19937* _MT, Config _config_s, Config _config_g,
+ int _num_agents, int _max_timestep, int _max_comp_time)
+  : instance(_instance),
+    G(_G),
+    MT(_MT),
+    config_s(_config_s),
+    config_g(_config_g),
+    num_agents(_num_agents),
+    max_timestep(_max_timestep),
+    max_comp_time(_max_comp_time)
+{
+};
+
+
+Node* Problem::getStart(int i) const
+{
+  if (!(0 <= i && i < (int)config_s.size())) halt("invalid index");
+  return config_s[i];
+}
+
+Node* Problem::getGoal(int i) const
+{
+  if (!(0 <= i && i < (int)config_g.size())) halt("invalid index");
+  return config_g[i];
+}
+
+void Problem::halt(const std::string& msg) const
+{
+  std::cout << "error@Problem: " << msg << std::endl;
+  this->~Problem();
+  std::exit(1);
+}
+
+void Problem::warn(const std::string& msg) const
+{
+  std::cout << "warn@Problem: " << msg << std::endl;
+}
+
+// -------------------------------------------
+// MAPF
+
+MAPF_Instance::MAPF_Instance(const std::string& _instance)
+  : Problem(_instance), instance_initialized(true)
 {
   // read instance file
   std::ifstream file(instance);
@@ -119,32 +162,23 @@ Problem::Problem(const std::string& _instance)
   config_g.resize(num_agents);
 }
 
-Problem::Problem(Problem* P, Config _config_s, Config _config_g,
+MAPF_Instance::MAPF_Instance(MAPF_Instance* P, Config _config_s, Config _config_g,
                  int _max_comp_time, int _max_timestep)
-    : G(P->getG()),
-      MT(P->getMT()),
-      config_s(_config_s),
-      config_g(_config_g),
-      num_agents(P->getNum()),
-      max_timestep(_max_timestep),
-      max_comp_time(_max_comp_time),
-      instance_initialized(false)
+  : Problem(P->getInstanceFileName(), P->getG(), P->getMT(),
+            _config_s, _config_g, P->getNum(), _max_timestep, _max_comp_time),
+    instance_initialized(false)
 {
 }
 
-Problem::Problem(Problem* P, int _max_comp_time)
-    : G(P->getG()),
-      MT(P->getMT()),
-      config_s(P->getConfigStart()),
-      config_g(P->getConfigGoal()),
-      num_agents(P->getNum()),
-      max_timestep(P->getMaxTimestep()),
-      max_comp_time(_max_comp_time),
-      instance_initialized(false)
+MAPF_Instance::MAPF_Instance(MAPF_Instance* P, int _max_comp_time)
+  :  Problem(P->getInstanceFileName(), P->getG(), P->getMT(),
+             P->getConfigStart(), P->getConfigGoal(), P->getNum(),
+             P->getMaxTimestep(), _max_comp_time),
+  instance_initialized(false)
 {
 }
 
-Problem::~Problem()
+MAPF_Instance::~MAPF_Instance()
 {
   if (instance_initialized) {
     if (G != nullptr) delete G;
@@ -152,19 +186,7 @@ Problem::~Problem()
   }
 }
 
-Node* Problem::getStart(int i) const
-{
-  if (!(0 <= i && i < (int)config_s.size())) halt("invalid index");
-  return config_s[i];
-}
-
-Node* Problem::getGoal(int i) const
-{
-  if (!(0 <= i && i < (int)config_g.size())) halt("invalid index");
-  return config_g[i];
-}
-
-void Problem::setRandomStartsGoals()
+void MAPF_Instance::setRandomStartsGoals()
 {
   // initialize
   config_s.clear();
@@ -216,7 +238,7 @@ void Problem::setRandomStartsGoals()
  * Note: it is hard to generate well-formed instances
  * with dense situations (e.g., ≥300 agents in arena)
  */
-void Problem::setWellFormedInstance()
+void MAPF_Instance::setWellFormedInstance()
 {
   // initialize
   config_s.clear();
@@ -256,20 +278,7 @@ void Problem::setWellFormedInstance()
   }
 }
 
-// I know that using "const" is something wired...
-void Problem::halt(const std::string& msg) const
-{
-  std::cout << "error@Problem: " << msg << std::endl;
-  this->~Problem();
-  std::exit(1);
-}
-
-void Problem::warn(const std::string& msg) const
-{
-  std::cout << "warn@Problem: " << msg << std::endl;
-}
-
-void Problem::makeScenFile(const std::string& output_file)
+void MAPF_Instance::makeScenFile(const std::string& output_file)
 {
   Grid* grid = reinterpret_cast<Grid*>(G);
   std::ofstream log;
@@ -286,3 +295,156 @@ void Problem::makeScenFile(const std::string& output_file)
   }
   log.close();
 }
+
+
+// -------------------------------------------
+// MAPD
+MAPD_Instance::MAPD_Instance(const std::string& _instance)
+  : Problem(_instance), current_timestep(-1)
+{
+  // read instance file
+  std::ifstream file(instance);
+  if (!file) halt("file " + instance + " is not found.");
+
+  std::string line;
+  std::smatch results;
+  std::regex r_comment = std::regex(R"(#.+)");
+  std::regex r_map = std::regex(R"(map_file=(.+))");
+  std::regex r_agents = std::regex(R"(agents=(\d+))");
+  std::regex r_seed = std::regex(R"(seed=(\d+))");
+  std::regex r_max_timestep = std::regex(R"(max_timestep=(\d+))");
+  std::regex r_max_comp_time = std::regex(R"(max_comp_time=(\d+))");
+  std::regex r_task_num = std::regex(R"(task_num=(\d+))");
+  std::regex r_task_frequency = std::regex(R"(task_frequency=(.+))");
+  std::regex r_sg = std::regex(R"((\d+),(\d+))");
+
+  while (getline(file, line)) {
+    // for CRLF coding
+    if (*(line.end() - 1) == 0x0d) line.pop_back();
+    // comment
+    if (std::regex_match(line, results, r_comment)) {
+      continue;
+    }
+    // read map
+    if (std::regex_match(line, results, r_map)) {
+      G = new Grid(results[1].str());
+      continue;
+    }
+    // set agent num
+    if (std::regex_match(line, results, r_agents)) {
+      num_agents = std::stoi(results[1].str());
+      continue;
+    }
+    // set random seed
+    if (std::regex_match(line, results, r_seed)) {
+      MT = new std::mt19937(std::stoi(results[1].str()));
+      continue;
+    }
+    // set max timestep
+    if (std::regex_match(line, results, r_max_timestep)) {
+      max_timestep = std::stoi(results[1].str());
+      continue;
+    }
+    // set max computation time
+    if (std::regex_match(line, results, r_max_comp_time)) {
+      max_comp_time = std::stoi(results[1].str());
+      continue;
+    }
+    // set the number of tasks
+    if (std::regex_match(line, results, r_task_num)) {
+      task_num = std::stoi(results[1].str());
+      continue;
+    }
+    // set task frequency
+    if (std::regex_match(line, results, r_task_frequency)) {
+      task_frequency = std::stof(results[1].str());
+      continue;
+    }
+    // read initial nodes
+    if (std::regex_match(line, results, r_sg) &&
+        (int)config_s.size() < num_agents) {
+      int x_s = std::stoi(results[1].str());
+      int y_s = std::stoi(results[2].str());
+      if (!G->existNode(x_s, y_s)) {
+        halt("start node (" + std::to_string(x_s) + ", " + std::to_string(y_s) +
+             ") does not exist, invalid scenario");
+      }
+
+      Node* s = G->getNode(x_s, y_s);
+      config_s.push_back(s);
+    }
+  }
+
+  // set default value not identified params
+  if (MT == nullptr) MT = new std::mt19937(DEFAULT_SEED);
+  if (max_timestep == 0) max_timestep = DEFAULT_MAX_TIMESTEP;
+  if (max_comp_time == 0) max_comp_time = DEFAULT_MAX_COMP_TIME;
+  if (task_frequency == 0) task_frequency = DEFAULT_TASK_FREQUENCY;
+  if (task_num == 0) task_num = DEFAULT_TASK_NUM;
+
+  // check starts
+  if (num_agents <= 0) halt("invalid number of agents");
+  const int config_s_size = config_s.size();
+  if (!config_s.empty() && num_agents > config_s_size) {
+    warn("given starts are not sufficient\nrandomly create instances");
+  }
+
+  // trimming
+  config_s.resize(num_agents);
+
+  // TODO: setup pickup and delivery locations
+  LOCS_PICKUP = G->getV();
+  LOCS_DELIVERY = G->getV();
+
+  // initialize
+  update();
+}
+
+MAPD_Instance::~MAPD_Instance()
+{
+  for (auto task : TASKS_OPEN) delete task;
+  for (auto task : TASKS_CLOSED) delete task;
+}
+
+void MAPD_Instance::update()
+{
+  // check finished tasks
+  auto itr = TASKS_OPEN.begin();
+  while (itr != TASKS_OPEN.begin()) {
+    auto task = *itr;
+
+    // not at delivery location
+    if (task->loc_current != task->loc_delivery) {
+      ++itr;
+      continue;
+    }
+
+    // append to CLOSED list
+    task->timestep_finished = current_timestep;
+    TASKS_CLOSED.push_back(task);
+
+    // remove from OPEN list
+    itr = TASKS_OPEN.erase(itr);
+  }
+
+  // create new tasks
+  int created_task_num = int(TASKS_OPEN.size() + TASKS_CLOSED.size());
+  if (created_task_num < task_num) {
+    int new_task_num = (int)task_frequency;
+    if (task_frequency < 1 && getRandomFloat(0, 1, MT) < task_frequency) {
+      new_task_num = 1;
+    }
+    new_task_num = std::min(new_task_num, task_num - created_task_num);
+    for (int i = 0; i < new_task_num; ++i) {
+      Node *p, *d;
+      do {
+        p = randomChoose(LOCS_PICKUP, MT);
+        d = randomChoose(LOCS_DELIVERY, MT);
+      } while (p == d);
+      TASKS_OPEN.push_back(new Task(p, d, current_timestep + 1));
+    }
+  }
+
+  // update timestep
+  ++current_timestep;
+};

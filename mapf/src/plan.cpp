@@ -101,7 +101,7 @@ void Plan::operator+=(const Plan& other)
   for (int t = 1; t < other.size(); ++t) add(other.get(t));
 }
 
-bool Plan::validate(Problem* P) const
+bool Plan::validate(MAPF_Instance* P) const
 {
   return validate(P->getConfigStart(), P->getConfigGoal());
 }
@@ -168,7 +168,7 @@ int Plan::getMaxConstraintTime(const int id, Node* s, Node* g, Graph* G) const
   return 0;
 }
 
-int Plan::getMaxConstraintTime(const int id, Problem* P) const
+int Plan::getMaxConstraintTime(const int id, MAPF_Instance* P) const
 {
   return getMaxConstraintTime(id, P->getStart(id), P->getGoal(id), P->getG());
 }

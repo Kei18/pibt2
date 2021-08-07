@@ -84,7 +84,7 @@ private:
   void checkConsistency(Plan& plan, std::vector<int>& occupied_now);
 
 public:
-  PushAndSwap(Problem* _P);
+  PushAndSwap(MAPF_Instance* _P);
   ~PushAndSwap() {}
 
   void setParams(int argc, char* argv[]);

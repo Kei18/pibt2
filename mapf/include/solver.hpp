@@ -17,7 +17,7 @@ class MinimumSolver
 {
 protected:
   std::string solver_name;       // solver name
-  Problem* const P;              // problem instance
+  MAPF_Instance* const P;              // problem instance
   Graph* const G;                // graph
   std::mt19937* const MT;        // seed for randomness
   const int max_timestep;        // maximum makespan
@@ -38,7 +38,7 @@ protected:
   virtual void exec() {};    // main
 
 public:
-  MinimumSolver(Problem* _P);
+  MinimumSolver(MAPF_Instance* _P);
   virtual ~MinimumSolver() {};
 
   // getter
@@ -208,9 +208,9 @@ protected:
   std::vector<std::vector<int>> PATH_TABLE;
 
 public:
-  Solver(Problem* _P);
+  Solver(MAPF_Instance* _P);
   virtual ~Solver();
 
   // other getter
-  Problem* getP() { return P; }
+  MAPF_Instance* getP() { return P; }
 };

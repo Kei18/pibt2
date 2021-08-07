@@ -53,13 +53,13 @@ public:
   void operator+=(const Plan& other);
 
   // check the plan is valid or not
-  bool validate(Problem* P) const;
+  bool validate(MAPF_Instance* P) const;
   bool validate(const Config& starts, const Config& goals) const;
 
   // when updating a single path,
   // the path should be longer than this value to avoid conflicts
   int getMaxConstraintTime(const int id, Node* s, Node* g, Graph* G) const;
-  int getMaxConstraintTime(const int id, Problem* P) const;
+  int getMaxConstraintTime(const int id, MAPF_Instance* P) const;
 
   // error
   void halt(const std::string& msg) const;

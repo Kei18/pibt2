@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iomanip>
 
-MinimumSolver::MinimumSolver(Problem* _P)
+MinimumSolver::MinimumSolver(MAPF_Instance* _P)
   : solver_name(""),
     P(_P),
     G(_P->getG()),
@@ -38,7 +38,7 @@ int MinimumSolver::getSolverElapsedTime() const { return getElapsedTime(t_start)
 // base class with utilities
 // -----------------------------------------------
 
-Solver::Solver(Problem* _P)
+Solver::Solver(MAPF_Instance* _P)
   : MinimumSolver(_P),
     verbose(false),
     LB_soc(0),

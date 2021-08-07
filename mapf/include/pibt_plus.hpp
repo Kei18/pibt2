@@ -17,7 +17,7 @@ public:
   void run();
 
 public:
-  PIBT_PLUS(Problem* _P);
+  PIBT_PLUS(MAPF_Instance* _P);
   ~PIBT_PLUS() {}
 
   void makeLog(const std::string& logfile);

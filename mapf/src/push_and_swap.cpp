@@ -4,7 +4,7 @@
 
 const std::string PushAndSwap::SOLVER_NAME = "PushAndSwap";
 
-PushAndSwap::PushAndSwap(Problem* _P)
+PushAndSwap::PushAndSwap(MAPF_Instance* _P)
   : Solver(_P), flg_compress(true), disable_dist_init(false), emergency_stop(false)
 {
   solver_name = PushAndSwap::SOLVER_NAME;
