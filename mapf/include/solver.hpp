@@ -17,7 +17,6 @@ class MinimumSolver
 {
 protected:
   std::string solver_name;       // solver name
-  MAPF_Instance* const P;              // problem instance
   Graph* const G;                // graph
   std::mt19937* const MT;        // seed for randomness
   const int max_timestep;        // maximum makespan
@@ -29,72 +28,15 @@ private:
   int comp_time;             // computation time
   Time::time_point t_start;  // when to start solving
 
-public:
-  void solve();  // call start -> run -> end
-private:
-  void start();
-  void end();
 protected:
-  virtual void exec() {};    // main
-
-public:
-  MinimumSolver(MAPF_Instance* _P);
-  virtual ~MinimumSolver() {};
-
-  // getter
-  Plan getSolution() const { return solution; };
-  bool succeed() const { return solved; };
-  std::string getSolverName() const { return solver_name; };
-  int getMaxTimestep() const { return max_timestep; };
-  int getCompTime() const { return comp_time; }
-  int getSolverElapsedTime() const;  // get elapsed time from start
-};
-
-// -----------------------------------------------
-// base class with utilities
-// -----------------------------------------------
-class Solver : public MinimumSolver
-{
-private:
-  // useful info
   bool verbose;      // true -> print additional info
-  int LB_soc;        // lower bound of soc
-  int LB_makespan;   // lower bound of makespan
   bool log_short;    // true -> cannot visualize the result, default: false
-
-  // distance to goal
-protected:
-  using DistanceTable = std::vector<std::vector<int>>;  // [agent][node_id]
-  DistanceTable distance_table;     // distance table
-  DistanceTable* distance_table_p;  // pointer, used in nested solvers
-
-
-  // -------------------------------
-  // main
-private:
-  void exec();
-protected:
-  virtual void run() {} // main
 
   // -------------------------------
   // utilities for time
 public:
   int getRemainedTime() const;       // get remained time
   bool overCompTime() const;         // check time limit
-
-  // -------------------------------
-  // utilities for problem instance
-public:
-  int getLowerBoundSOC();       // get trivial lower bound of sum-of-costs
-  int getLowerBoundMakespan();  // get trivial lower bound of makespan
-private:
-  void computeLowerBounds();    // compute lb_soc and lb_makespan
-
-  // -------------------------------
-  // utilities for solution representation
-public:
-  static Paths planToPaths(const Plan& plan);   // plan -> paths
-  static Plan pathsToPlan(const Paths& paths);  // paths -> plan
 
   // -------------------------------
   // utilities for debug
@@ -111,6 +53,79 @@ protected:
   void warn(const std::string& msg) const;  // just printing msg
 
   // -------------------------------
+  // utilities for solver options
+public:
+  virtual void setParams(int argc, char* argv[]){};
+  void setVerbose(bool _verbose) { verbose = _verbose; }
+  void setLogShort(bool _log_short) { log_short = _log_short; }
+
+  // -------------------------------
+  // utilities for distance
+  int pathDist(Node* const s, Node* const g) const { return G->pathDist(s, g); }
+
+public:
+  void solve();  // call start -> run -> end
+private:
+  void start();
+  void end();
+protected:
+  virtual void exec() {};    // main
+
+public:
+  MinimumSolver(Problem* _P);
+  virtual ~MinimumSolver() {};
+
+  // getter
+  Plan getSolution() const { return solution; };
+  bool succeed() const { return solved; };
+  std::string getSolverName() const { return solver_name; };
+  int getMaxTimestep() const { return max_timestep; };
+  int getCompTime() const { return comp_time; }
+  int getSolverElapsedTime() const;  // get elapsed time from start
+};
+
+// -----------------------------------------------
+// base class with utilities
+// -----------------------------------------------
+class MAPF_Solver : public MinimumSolver
+{
+protected:
+  MAPF_Instance* const P;        // problem instance
+
+private:
+  // useful info
+  int LB_soc;        // lower bound of soc
+  int LB_makespan;   // lower bound of makespan
+
+  // distance to goal
+protected:
+  using DistanceTable = std::vector<std::vector<int>>;  // [agent][node_id]
+  DistanceTable distance_table;     // distance table
+  DistanceTable* distance_table_p;  // pointer, used in nested solvers
+
+
+  // -------------------------------
+  // main
+private:
+  void exec();
+protected:
+  virtual void run() {} // main
+
+  // -------------------------------
+  // utilities for problem instance
+public:
+  int getLowerBoundSOC();       // get trivial lower bound of sum-of-costs
+  int getLowerBoundMakespan();  // get trivial lower bound of makespan
+private:
+  void computeLowerBounds();    // compute lb_soc and lb_makespan
+
+  // -------------------------------
+  // utilities for solution representation
+public:
+  static Paths planToPaths(const Plan& plan);   // plan -> paths
+  static Plan pathsToPlan(const Paths& paths);  // paths -> plan
+
+  // -------------------------------
   // log
 public:
   virtual void makeLog(const std::string& logfile = "./result.txt");
@@ -118,15 +133,9 @@ protected:
   void makeLogBasicInfo(std::ofstream& log);
   void makeLogSolution(std::ofstream& log);
 
-  // -------------------------------
-  // utilities for solver options
-public:
-  virtual void setParams(int argc, char* argv[]){};
-  void setVerbose(bool _verbose) { verbose = _verbose; }
-  void setLogShort(bool _log_short) { log_short = _log_short; }
 protected:
   // used for set underlying solver options
-  static void setSolverOption(std::shared_ptr<Solver> solver,
+  static void setSolverOption(std::shared_ptr<MAPF_Solver> solver,
                               const std::vector<std::string>& option);
 
   // -------------------------------
@@ -143,8 +152,6 @@ public:
   int pathDist(const int i) const;                 // get path distance between s_i -> g_i
   void createDistanceTable();                      // compute distance table
   void setDistanceTable(DistanceTable* p) { distance_table_p = p; }  // used in nested solvers
-  // use grid-pathfinding
-  int pathDist(Node* const s, Node* const g) const { return G->pathDist(s, g); }
 
 
   // -------------------------------
@@ -208,9 +215,30 @@ protected:
   std::vector<std::vector<int>> PATH_TABLE;
 
 public:
-  Solver(MAPF_Instance* _P);
-  virtual ~Solver();
+  MAPF_Solver(MAPF_Instance* _P);
+  virtual ~MAPF_Solver();
 
-  // other getter
   MAPF_Instance* getP() { return P; }
+};
+
+class MAPD_Solver : public MinimumSolver
+{
+protected:
+  MAPD_Instance* const P;        // problem instance
+
+public:
+  void printResult() {}
+
+  // -------------------------------
+  // main
+private:
+  void exec() { run(); };
+protected:
+  virtual void run() {} // main
+
+public:
+  MAPD_Solver(MAPD_Instance* _P);
+  virtual ~MAPD_Solver();
+
+  MAPD_Instance* getP() { return P; }
 };

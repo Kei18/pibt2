@@ -3,15 +3,16 @@
 #include <fstream>
 #include <iomanip>
 
-MinimumSolver::MinimumSolver(MAPF_Instance* _P)
+MinimumSolver::MinimumSolver(Problem* _P)
   : solver_name(""),
-    P(_P),
     G(_P->getG()),
     MT(_P->getMT()),
-    max_timestep(P->getMaxTimestep()),
-    max_comp_time(P->getMaxCompTime()),
+    max_timestep(_P->getMaxTimestep()),
+    max_comp_time(_P->getMaxCompTime()),
     solved(false),
-    comp_time(0)
+    comp_time(0),
+    verbose(false),
+    log_short(false)
 {
 }
 
@@ -32,32 +33,66 @@ void MinimumSolver::end()
   comp_time = getSolverElapsedTime();
 }
 
+// -------------------------------
+// utilities for time
+// -------------------------------
+
 int MinimumSolver::getSolverElapsedTime() const { return getElapsedTime(t_start); }
+
+int MinimumSolver::getRemainedTime() const
+{
+  return std::max(0, max_comp_time - getSolverElapsedTime());
+}
+
+bool MinimumSolver::overCompTime() const
+{
+  return getSolverElapsedTime() >= max_comp_time;
+}
+
+// -------------------------------
+// utilities for debug
+// -------------------------------
+void MinimumSolver::info() const
+{
+  if (verbose) std::cout << std::endl;
+}
+
+void MinimumSolver::halt(const std::string& msg) const
+{
+  std::cout << "error@" << solver_name << ": " << msg << std::endl;
+  this->~MinimumSolver();
+  std::exit(1);
+}
+
+void MinimumSolver::warn(const std::string& msg) const
+{
+  std::cout << "warn@ " << solver_name << ": " << msg << std::endl;
+}
+
 
 // -----------------------------------------------
 // base class with utilities
 // -----------------------------------------------
 
-Solver::Solver(MAPF_Instance* _P)
+MAPF_Solver::MAPF_Solver(MAPF_Instance* _P)
   : MinimumSolver(_P),
-    verbose(false),
+    P(_P),
     LB_soc(0),
     LB_makespan(0),
-    log_short(false),
-    distance_table(P->getNum(),
+    distance_table(_P->getNum(),
                    std::vector<int>(G->getNodesSize(), max_timestep)),
     distance_table_p(nullptr)
 {
 }
 
-Solver::~Solver()
+MAPF_Solver::~MAPF_Solver()
 {
 }
 
 // -------------------------------
 // main
 // -------------------------------
-void Solver::exec()
+void MAPF_Solver::exec()
 {
   // create distance table
   if (distance_table_p == nullptr) {
@@ -70,22 +105,9 @@ void Solver::exec()
 }
 
 // -------------------------------
-// utilities for time
-// -------------------------------
-int Solver::getRemainedTime() const
-{
-  return std::max(0, max_comp_time - getSolverElapsedTime());
-}
-
-bool Solver::overCompTime() const
-{
-  return getSolverElapsedTime() >= max_comp_time;
-}
-
-// -------------------------------
 // utilities for problem instance
 // -------------------------------
-void Solver::computeLowerBounds()
+void MAPF_Solver::computeLowerBounds()
 {
   LB_soc = 0;
   LB_makespan = 0;
@@ -97,13 +119,13 @@ void Solver::computeLowerBounds()
   }
 }
 
-int Solver::getLowerBoundSOC()
+int MAPF_Solver::getLowerBoundSOC()
 {
   if (LB_soc == 0) computeLowerBounds();
   return LB_soc;
 }
 
-int Solver::getLowerBoundMakespan()
+int MAPF_Solver::getLowerBoundMakespan()
 {
   if (LB_makespan == 0) computeLowerBounds();
   return LB_makespan;
@@ -111,7 +133,7 @@ int Solver::getLowerBoundMakespan()
 
 // -------------------------------
 // utilities for solution representation
-Paths Solver::planToPaths(const Plan& plan)
+Paths MAPF_Solver::planToPaths(const Plan& plan)
 {
   int num_agents = plan.get(0).size();
   Paths paths(num_agents);
@@ -126,7 +148,7 @@ Paths Solver::planToPaths(const Plan& plan)
   return paths;
 }
 
-Plan Solver::pathsToPlan(const Paths& paths)
+Plan MAPF_Solver::pathsToPlan(const Paths& paths)
 {
   Plan plan;
   if (paths.empty()) return plan;
@@ -142,31 +164,10 @@ Plan Solver::pathsToPlan(const Paths& paths)
   return plan;
 }
 
-
-// -------------------------------
-// utilities for debug
-// -------------------------------
-void Solver::info() const
-{
-  if (verbose) std::cout << std::endl;
-}
-
-void Solver::halt(const std::string& msg) const
-{
-  std::cout << "error@" << solver_name << ": " << msg << std::endl;
-  this->~Solver();
-  std::exit(1);
-}
-
-void Solver::warn(const std::string& msg) const
-{
-  std::cout << "warn@ " << solver_name << ": " << msg << std::endl;
-}
-
 // -------------------------------
 // utilities for log
 // -------------------------------
-void Solver::makeLog(const std::string& logfile)
+void MAPF_Solver::makeLog(const std::string& logfile)
 {
   std::ofstream log;
   log.open(logfile, std::ios::out);
@@ -175,7 +176,7 @@ void Solver::makeLog(const std::string& logfile)
   log.close();
 }
 
-void Solver::makeLogBasicInfo(std::ofstream& log)
+void MAPF_Solver::makeLogBasicInfo(std::ofstream& log)
 {
   Grid* grid = reinterpret_cast<Grid*>(P->getG());
   log << "instance=" << P->getInstanceFileName() << "\n";
@@ -190,7 +191,7 @@ void Solver::makeLogBasicInfo(std::ofstream& log)
   log << "comp_time=" << getCompTime() << "\n";
 }
 
-void Solver::makeLogSolution(std::ofstream& log)
+void MAPF_Solver::makeLogSolution(std::ofstream& log)
 {
   if (log_short) return;
 
@@ -219,7 +220,7 @@ void Solver::makeLogSolution(std::ofstream& log)
 // -------------------------------
 // utilities for solver options
 // -------------------------------
-void Solver::setSolverOption(std::shared_ptr<Solver> solver,
+void MAPF_Solver::setSolverOption(std::shared_ptr<MAPF_Solver> solver,
                              const std::vector<std::string>& option)
 {
   if (option.empty()) return;
@@ -235,7 +236,7 @@ void Solver::setSolverOption(std::shared_ptr<Solver> solver,
 // -------------------------------
 // print
 // -------------------------------
-void Solver::printResult()
+void MAPF_Solver::printResult()
 {
   std::cout << "solved=" << solved << ", solver=" << std::right << std::setw(8)
             << solver_name << ", comp_time(ms)=" << std::right << std::setw(8)
@@ -247,7 +248,7 @@ void Solver::printResult()
             << getLowerBoundMakespan() << ")" << std::endl;
 }
 
-void Solver::printHelpWithoutOption(const std::string& solver_name)
+void MAPF_Solver::printHelpWithoutOption(const std::string& solver_name)
 {
   std::cout << solver_name << "\n"
             << "  (no option)" << std::endl;
@@ -256,7 +257,7 @@ void Solver::printHelpWithoutOption(const std::string& solver_name)
 // -------------------------------
 // distance
 // -------------------------------
-int Solver::pathDist(const int i, Node* const s) const
+int MAPF_Solver::pathDist(const int i, Node* const s) const
 {
   if (distance_table_p != nullptr) {
     return distance_table_p->operator[](i)[s->id];
@@ -264,9 +265,9 @@ int Solver::pathDist(const int i, Node* const s) const
   return distance_table[i][s->id];
 }
 
-int Solver::pathDist(const int i) const { return pathDist(i, P->getStart(i)); }
+int MAPF_Solver::pathDist(const int i) const { return pathDist(i, P->getStart(i)); }
 
-void Solver::createDistanceTable()
+void MAPF_Solver::createDistanceTable()
 {
   for (int i = 0; i < P->getNum(); ++i) {
     // breadth first search
@@ -291,17 +292,17 @@ void Solver::createDistanceTable()
 // -------------------------------
 // utilities for getting path
 // -------------------------------
-Solver::AstarNode::AstarNode(Node* _v, int _g, int _f, AstarNode* _p)
+MAPF_Solver::AstarNode::AstarNode(Node* _v, int _g, int _f, AstarNode* _p)
   : v(_v), g(_g), f(_f), p(_p), name(getName(_v, _g))
 {
 }
 
-std::string Solver::AstarNode::getName(Node* _v, int _g)
+std::string MAPF_Solver::AstarNode::getName(Node* _v, int _g)
 {
   return std::to_string(_v->id) + "-" + std::to_string(_g);
 }
 
-Path Solver::getPathBySpaceTimeAstar
+Path MAPF_Solver::getPathBySpaceTimeAstar
 (Node* const s,
  Node* const g,
  AstarHeuristics& fValue,
@@ -379,14 +380,14 @@ Path Solver::getPathBySpaceTimeAstar
 }
 
 
-Solver::CompareAstarNode Solver::compareAstarNodeBasic =
+MAPF_Solver::CompareAstarNode MAPF_Solver::compareAstarNodeBasic =
   [](AstarNode* a, AstarNode* b) {
     if (a->f != b->f) return a->f > b->f;
     if (a->g != b->g) return a->g < b->g;
     return false;
   };
 
-Path Solver::getPrioritizedPath
+Path MAPF_Solver::getPrioritizedPath
 (const int id,
  const Paths& paths,
  const int time_limit,
@@ -472,7 +473,7 @@ Path Solver::getPrioritizedPath
   return p;
 }
 
-void Solver::updatePathTable(const Paths& paths, const int id)
+void MAPF_Solver::updatePathTable(const Paths& paths, const int id)
 {
   const int makespan = paths.getMakespan();
   const int num_agents = paths.size();
@@ -488,7 +489,7 @@ void Solver::updatePathTable(const Paths& paths, const int id)
   }
 }
 
-void Solver::clearPathTable(const Paths& paths)
+void MAPF_Solver::clearPathTable(const Paths& paths)
 {
   const int makespan = paths.getMakespan();
   const int num_agents = paths.size();
@@ -499,7 +500,7 @@ void Solver::clearPathTable(const Paths& paths)
   }
 }
 
-void Solver::updatePathTableWithoutClear(const int id, const Path& p,
+void MAPF_Solver::updatePathTableWithoutClear(const int id, const Path& p,
                                          const Paths& paths)
 {
   if (p.empty()) return;
@@ -525,4 +526,16 @@ void Solver::updatePathTableWithoutClear(const int id, const Path& p,
     auto v_id = p[p_makespan]->id;
     for (int t = p_makespan + 1; t <= makespan; ++t) PATH_TABLE[t][v_id] = id;
   }
+}
+
+//-----------------------------------------------------
+// MAPD Solver
+MAPD_Solver::MAPD_Solver(MAPD_Instance* _P)
+  : MinimumSolver(_P),
+    P(_P)
+{
+}
+
+MAPD_Solver::~MAPD_Solver()
+{
 }

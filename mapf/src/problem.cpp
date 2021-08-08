@@ -410,7 +410,7 @@ void MAPD_Instance::update()
 {
   // check finished tasks
   auto itr = TASKS_OPEN.begin();
-  while (itr != TASKS_OPEN.begin()) {
+  while (itr != TASKS_OPEN.end()) {
     auto task = *itr;
 
     // not at delivery location
@@ -419,7 +419,6 @@ void MAPD_Instance::update()
       continue;
     }
 
-    // append to CLOSED list
     task->timestep_finished = current_timestep;
     TASKS_CLOSED.push_back(task);
 

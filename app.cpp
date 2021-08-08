@@ -11,8 +11,8 @@
 #include <vector>
 
 void printHelp();
-std::unique_ptr<Solver> getSolver(const std::string solver_name, MAPF_Instance* P,
-                                  bool verbose, int argc, char* argv[]);
+std::unique_ptr<MAPF_Solver> getSolver(const std::string solver_name, MAPF_Instance* P,
+                                       bool verbose, int argc, char* argv[]);
 
 int main(int argc, char* argv[])
 {
@@ -111,10 +111,10 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-std::unique_ptr<Solver> getSolver(const std::string solver_name, MAPF_Instance* P,
+std::unique_ptr<MAPF_Solver> getSolver(const std::string solver_name, MAPF_Instance* P,
                                   bool verbose, int argc, char* argv[])
 {
-  std::unique_ptr<Solver> solver;
+  std::unique_ptr<MAPF_Solver> solver;
   if (solver_name == "PIBT") {
     solver = std::make_unique<PIBT>(P);
   } else if (solver_name == "HCA") {

@@ -8,7 +8,7 @@
 
 const std::string PIBT_PLUS::SOLVER_NAME = "PIBT_PLUS";
 
-PIBT_PLUS::PIBT_PLUS(MAPF_Instance* _P) : Solver(_P)
+PIBT_PLUS::PIBT_PLUS(MAPF_Instance* _P) : MAPF_Solver(_P)
 {
   solver_name = SOLVER_NAME;
   comp_time_complement = 0;

@@ -3,7 +3,7 @@
 const std::string HCA::SOLVER_NAME = "HCA";
 
 HCA::HCA(MAPF_Instance* _P)
-    : Solver(_P),
+    : MAPF_Solver(_P),
       table_starts(G->getNodesSize(), false),
       table_goals(G->getNodesSize(), false)
 {
@@ -81,8 +81,8 @@ Path HCA::getPrioritizedPath(int id, const Paths& paths)
     return false;
   };
 
-  const auto p = Solver::getPrioritizedPath(id, paths, getRemainedTime(),
-                                            max_timestep, {}, compare, false);
+  const auto p = MAPF_Solver::getPrioritizedPath(id, paths, getRemainedTime(),
+                                                 max_timestep, {}, compare, false);
 
   // update path table
   updatePathTableWithoutClear(id, p, paths);

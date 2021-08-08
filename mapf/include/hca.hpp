@@ -20,7 +20,7 @@
 #pragma once
 #include "solver.hpp"
 
-class HCA : public Solver
+class HCA : public MAPF_Solver
 {
 public:
   static const std::string SOLVER_NAME;

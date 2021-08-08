@@ -10,7 +10,7 @@
 #pragma once
 #include "solver.hpp"
 
-class PushAndSwap : public Solver
+class PushAndSwap : public MAPF_Solver
 {
 public:
   static const std::string SOLVER_NAME;

@@ -1,22 +1,24 @@
-#include "../include/pibt.hpp"
+#include "../include/pibt_mapd.hpp"
 
-const std::string PIBT::SOLVER_NAME = "PIBT";
+const std::string PIBT_MAPD::SOLVER_NAME = "PIBT_MAPD";
 
-PIBT::PIBT(MAPF_Instance* _P)
-    : MAPF_Solver(_P),
+PIBT_MAPD::PIBT_MAPD(MAPD_Instance* _P)
+    : MAPD_Solver(_P),
       occupied_now(Agents(G->getNodesSize(), nullptr)),
       occupied_next(Agents(G->getNodesSize(), nullptr))
 {
-  solver_name = PIBT::SOLVER_NAME;
+  solver_name = PIBT_MAPD::SOLVER_NAME;
 }
 
-void PIBT::run()
+void PIBT_MAPD::run()
 {
   // compare priority of agents
   auto compare = [](Agent* a, const Agent* b) {
+    if (a->task != nullptr && b->task == nullptr) return false;
+    if (a->task == nullptr && b->task != nullptr) return true;
+
     if (a->elapsed != b->elapsed) return a->elapsed < b->elapsed;
     // use initial distance
-    if (a->init_d != b->init_d) return a->init_d < b->init_d;
     return a->tie_breaker < b->tie_breaker;
   };
 
@@ -24,28 +26,81 @@ void PIBT::run()
   std::priority_queue<Agent*, Agents, decltype(compare)> undecided(compare);
   // agents have already decided their next locations
   std::vector<Agent*> decided;
+  // whole agents
+  std::vector<Agent*> A;
 
   // initialize
   for (int i = 0; i < P->getNum(); ++i) {
     Node* s = P->getStart(i);
-    Node* g = P->getGoal(i);
-    int d = disable_dist_init ? 0 : pathDist(i);
     Agent* a = new Agent{i,                          // id
                          s,                          // current location
                          nullptr,                    // next location
-                         g,                          // goal
+                         s,                          // goal
                          0,                          // elapsed
-                         d,                          // dist from s -> g
-                         getRandomFloat(0, 1, MT)};  // tie-breaker
+                         getRandomFloat(0, 1, MT),   // tie-breaker
+                         nullptr,                    // task (assigned)
+                         nullptr,                    // target_task (if free)
+    };
     undecided.push(a);
     occupied_now[s->id] = a;
+    A.push_back(a);
   }
   solution.add(P->getConfigStart());
 
+  auto assign = [&] (Agent* a, Task* task) {
+    a->task = task;
+    a->target_task = nullptr;
+    a->task->assigned = true;
+    a->g = task->loc_delivery;  // update destination
+    info("   ", "assign task-", a->task->id, ": agent-", a->id, ", ",
+         a->task->loc_pickup->id, " -> ", a->task->loc_delivery->id);
+  };
+
   // main loop
-  int timestep = 0;
   while (true) {
-    info(" ", "elapsed:", getSolverElapsedTime(), ", timestep:", timestep);
+    info(" ", "elapsed:", getSolverElapsedTime(),
+         ", timestep:", P->getCurrentTimestep(),
+         ", open_tasks:", P->getOpenTasks().size(),
+         ", closed_tasks:", P->getClosedTasks().size(),
+         ", task_num:", P->getTaskNum());
+
+    // target assignment
+    {
+      std::vector<Task*> unassigned_tasks;
+      for (auto task : P->getOpenTasks()) {
+        if (!task->assigned) unassigned_tasks.push_back(task);
+      }
+      for (auto a : A) {
+        // agent is already assigned task
+        if (a->task != nullptr) continue;
+
+        // free agent, find min_distance pickup location
+
+        // setup
+        a->target_task = nullptr;
+        a->g = a->v_now;
+        int min_d = P->getG()->getNodesSize();
+
+        std::shuffle(unassigned_tasks.begin(), unassigned_tasks.end(), *MT);
+        for (auto itr = unassigned_tasks.begin();
+             itr != unassigned_tasks.end(); ++itr) {
+          auto task = *itr;
+          int d = pathDist(a->v_now, task->loc_pickup);
+          if (d == 0) {
+            // special case, assign task directly
+            assign(a, task);
+            unassigned_tasks.erase(itr);  // remove from unassigned_tasks
+            break;
+          }
+
+          if (d < min_d) {
+            min_d = d;
+            a->g = task->loc_pickup;
+            a->target_task = task;
+          }
+        }
+      }
+    }
 
     // planning
     while (!undecided.empty()) {
@@ -62,7 +117,6 @@ void PIBT::run()
     }
 
     // acting
-    bool check_goal_cond = true;
     Config config(P->getNum(), nullptr);
     for (auto a : decided) {
       // clear
@@ -72,8 +126,6 @@ void PIBT::run()
       // set next location
       config[a->id] = a->v_next;
       occupied_now[a->v_next->id] = a;
-      // check goal condition
-      check_goal_cond &= (a->v_next == a->g);
       // update priority
       a->elapsed = (a->v_next == a->g) ? 0 : a->elapsed + 1;
       // reset params
@@ -81,34 +133,53 @@ void PIBT::run()
       a->v_next = nullptr;
       // push to priority queue
       undecided.push(a);
+
+      // update task info
+      if (a->task != nullptr) {  // assigned agent
+        a->task->loc_current = a->v_now;
+
+        // finish
+        if (a->task->loc_current == a->task->loc_delivery) {
+          info("   ", "finish task-", a->task->id, ": agent-", a->id, ", ",
+               a->task->loc_pickup->id, " -> ", a->task->loc_delivery->id);
+
+          a->task = nullptr;
+        }
+
+      } else if (a->target_task != nullptr) {  // free agent
+        // assign
+        if (a->target_task->loc_pickup == a->v_now) {
+          assign(a, a->target_task);
+        }
+      }
+
     }
     decided.clear();
 
     // update plan
     solution.add(config);
 
-    ++timestep;
+    // increment timestep
+    P->update();
 
-    // success
-    if (check_goal_cond) {
-      solved = true;
+    // failure
+    if (P->getCurrentTimestep() >= max_timestep || overCompTime()) {
+      solved = false;
       break;
     }
 
-    // failed
-    if (timestep >= max_timestep || overCompTime()) {
+    // success
+    if ((int)P->getClosedTasks().size() == P->getTaskNum()) {
+      solved = true;
       break;
     }
   }
 
   // memory clear
-  while (!undecided.empty()) {
-    delete undecided.top();
-    undecided.pop();
-  }
+  for (auto a : A) delete a;
 }
 
-bool PIBT::funcPIBT(Agent* ai)
+bool PIBT_MAPD::funcPIBT(Agent* ai)
 {
   // decide next node
   Node* v = planOneStep(ai);
@@ -137,7 +208,7 @@ bool PIBT::funcPIBT(Agent* ai)
 /*
  * no candidate node -> return nullptr
  */
-Node* PIBT::planOneStep(Agent* a)
+Node* PIBT_MAPD::planOneStep(Agent* a)
 {
   Node* v = chooseNode(a);
   if (v != nullptr) {
@@ -149,7 +220,7 @@ Node* PIBT::planOneStep(Agent* a)
 }
 
 // no candidate node -> return nullptr
-Node* PIBT::chooseNode(Agent* a)
+Node* PIBT_MAPD::chooseNode(Agent* a)
 {
   // candidates
   Nodes C = a->v_now->neighbor;
@@ -176,8 +247,8 @@ Node* PIBT::chooseNode(Agent* a)
     if (v == nullptr) {
       v = u;
     } else {
-      int c_v = pathDist(a->id, v);
-      int c_u = pathDist(a->id, u);
+      int c_v = pathDist(v, a->g);
+      int c_u = pathDist(u, a->g);
       if ((c_u < c_v) || (c_u == c_v && occupied_now[v->id] != nullptr &&
                           occupied_now[u->id] == nullptr)) {
         v = u;
@@ -188,30 +259,10 @@ Node* PIBT::chooseNode(Agent* a)
   return v;
 }
 
-void PIBT::setParams(int argc, char* argv[])
+void PIBT_MAPD::printHelp()
 {
-  struct option longopts[] = {
-      {"disable-dist-init", no_argument, 0, 'd'},
-      {0, 0, 0, 0},
-  };
-  optind = 1;  // reset
-  int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "d", longopts, &longindex)) != -1) {
-    switch (opt) {
-      case 'd':
-        disable_dist_init = true;
-        break;
-      default:
-        break;
-    }
-  }
-}
-
-void PIBT::printHelp()
-{
-  std::cout << PIBT::SOLVER_NAME << "\n"
-            << "  -d --disable-dist-init"
+  std::cout << PIBT_MAPD::SOLVER_NAME << "\n"
+            << "  (none)"
             << "        "
-            << "disable initialization of priorities "
-            << "using distance from starts to goals" << std::endl;
+            << std::endl;
 }
