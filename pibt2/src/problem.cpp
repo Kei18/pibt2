@@ -300,7 +300,9 @@ void MAPF_Instance::makeScenFile(const std::string& output_file)
 // -------------------------------------------
 // MAPD
 MAPD_Instance::MAPD_Instance(const std::string& _instance)
-  : Problem(_instance), current_timestep(-1)
+  : Problem(_instance),
+    current_timestep(-1),
+    specify_pickup_deliv_locs(true)
 {
   // read instance file
   std::ifstream file(instance);
@@ -316,6 +318,7 @@ MAPD_Instance::MAPD_Instance(const std::string& _instance)
   std::regex r_max_comp_time = std::regex(R"(max_comp_time=(\d+))");
   std::regex r_task_num = std::regex(R"(task_num=(\d+))");
   std::regex r_task_frequency = std::regex(R"(task_frequency=(.+))");
+  std::regex r_specify_pikup_deliv_locs = std::regex(R"(specify_pikup_deliv_locs=(\d+))");
   std::regex r_sg = std::regex(R"((\d+),(\d+))");
 
   while (getline(file, line)) {
@@ -360,6 +363,11 @@ MAPD_Instance::MAPD_Instance(const std::string& _instance)
       task_frequency = std::stof(results[1].str());
       continue;
     }
+    // set task frequency
+    if (std::regex_match(line, results, r_specify_pikup_deliv_locs)) {
+      specify_pickup_deliv_locs = (bool)std::stoi(results[1].str());
+      continue;
+    }
     // read initial nodes
     if (std::regex_match(line, results, r_sg) &&
         (int)config_s.size() < num_agents) {
@@ -385,8 +393,9 @@ MAPD_Instance::MAPD_Instance(const std::string& _instance)
   // check starts
   if (num_agents <= 0) halt("invalid number of agents");
   if (num_agents > (int)config_s.size()) {
-    if (config_s.empty()) {
+    if (!config_s.empty()) {
       warn("given starts are not sufficient\nrandomly create instances");
+      config_s.clear();
     }
 
     // set starts
@@ -409,9 +418,13 @@ MAPD_Instance::MAPD_Instance(const std::string& _instance)
   // trimming
   config_s.resize(num_agents);
 
-  // TODO: setup pickup and delivery locations
-  LOCS_PICKUP = G->getV();
-  LOCS_DELIVERY = G->getV();
+  if (specify_pickup_deliv_locs) {
+    setupSpetialNodes();
+  }
+  if (LOCS_PICKUP.empty()) {
+    LOCS_PICKUP = G->getV();
+    LOCS_DELIVERY = G->getV();
+  }
 
   // initialize
   update();
@@ -421,6 +434,53 @@ MAPD_Instance::~MAPD_Instance()
 {
   for (auto task : TASKS_OPEN) delete task;
   for (auto task : TASKS_CLOSED) delete task;
+}
+
+void MAPD_Instance::setupSpetialNodes()
+{
+  Grid* grid = reinterpret_cast<Grid*>(G);
+
+  // read instance file
+#ifdef _MAPDIR_
+  std::ifstream file(_MAPDIR_ + grid->getMapFileName() + ".pd");
+#else
+  std::ifstream file(grid->getMapFileName() + ".pd");
+#endif
+  if (!file) return;
+
+  std::string line, s;
+  std::smatch results;
+  std::regex r_obj   = std::regex(R"([@T])");
+  std::regex r_pickup = std::regex(R"([psa])");  // pickup loc.
+  std::regex r_deliv  = std::regex(R"([dsa])");  // delivery loc.
+  std::regex r_end    = std::regex(R"([ea])");   // end loc.
+
+  const int width = grid->getWidth();
+
+  int y = 0;
+  while (getline(file, line)) {
+    // for CRLF coding
+    if (*(line.end() - 1) == 0x0d) line.pop_back();
+
+    if ((int)line.size() != width) halt("pd format is invalid");
+
+    for (int x = 0; x < width; ++x) {
+      if (!G->existNode(x, y)) continue;
+
+      auto v = G->getNode(x, y);
+      s = line[x];
+      if (std::regex_match(s, results, r_pickup)) {
+        LOCS_PICKUP.push_back(v);
+      }
+      if (std::regex_match(s, results, r_deliv)) {
+        LOCS_DELIVERY.push_back(v);
+      }
+      if (std::regex_match(s, results, r_end)) {
+        LOCS_ENDPOINTS.push_back(v);
+      }
+    }
+    ++y;
+  }
 }
 
 void MAPD_Instance::update()

@@ -59,16 +59,11 @@ public:
   void setVerbose(bool _verbose) { verbose = _verbose; }
   void setLogShort(bool _log_short) { log_short = _log_short; }
 
-  // -------------------------------
-  // utilities for distance
-  int pathDist(Node* const s, Node* const g) const { return G->pathDist(s, g); }
-
 public:
-  void solve();  // call start -> run -> end
-private:
+  virtual void solve();  // call start -> run -> end
+protected:
   void start();
   void end();
-protected:
   virtual void exec() {};    // main
 
 public:
@@ -150,6 +145,7 @@ protected:
   // -------------------------------
   // utilities for distance
 public:
+  int pathDist(Node* const s, Node* const g) const { return G->pathDist(s, g); }
   int pathDist(const int i, Node* const s) const;  // get path distance between s -> g_i
   int pathDist(const int i) const;                 // get path distance between s_i -> g_i
   void createDistanceTable();                      // compute distance table
@@ -245,6 +241,17 @@ protected:
   virtual void makeLogSolution(std::ofstream& log);
 
   // -------------------------------
+  // distance
+protected:
+  bool use_distance_table;
+  int preprocessing_comp_time;  // computation time
+  using DistanceTable = std::vector<std::vector<int>>;  // [node_id][node_id]
+  DistanceTable distance_table;     // distance table
+  int pathDist(Node* const s, Node* const g) const;
+private:
+  void createDistanceTable();
+
+  // -------------------------------
   // metric
 public:
   float getTotalServiceTime();
@@ -252,13 +259,15 @@ public:
 
   // -------------------------------
   // main
+public:
+  void solve();
 private:
-  void exec() { run(); };
+  void exec();
 protected:
   virtual void run() {} // main
 
 public:
-  MAPD_Solver(MAPD_Instance* _P);
+  MAPD_Solver(MAPD_Instance* _P, bool _use_distance_table = false);
   virtual ~MAPD_Solver();
 
   MAPD_Instance* getP() { return P; }

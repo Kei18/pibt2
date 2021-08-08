@@ -36,7 +36,7 @@ private:
   void run();
 
 public:
-  PIBT_MAPD(MAPD_Instance* _P);
+  PIBT_MAPD(MAPD_Instance* _P, bool _use_distance_table = false);
   ~PIBT_MAPD() {}
 
   static void printHelp();

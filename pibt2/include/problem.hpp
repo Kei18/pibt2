@@ -112,8 +112,12 @@ private:
   std::vector<Task*> TASKS_OPEN;
   std::vector<Task*> TASKS_CLOSED;
 
-  Nodes LOCS_PICKUP;    // candidates of pickup locations
-  Nodes LOCS_DELIVERY;  // candidates of delivery locations
+  Nodes LOCS_PICKUP;     // candidates of pickup locations
+  Nodes LOCS_DELIVERY;   // candidates of delivery locations
+  Nodes LOCS_ENDPOINTS;  // endpoints, not necessary for PIBT
+
+  bool specify_pickup_deliv_locs;
+  void setupSpetialNodes();
 
 public:
   MAPD_Instance(const std::string& _instance);

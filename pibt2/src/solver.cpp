@@ -529,14 +529,67 @@ void MAPF_Solver::updatePathTableWithoutClear(const int id, const Path& p,
 
 //-----------------------------------------------------
 // MAPD Solver
-MAPD_Solver::MAPD_Solver(MAPD_Instance* _P)
+MAPD_Solver::MAPD_Solver(MAPD_Instance* _P, bool _use_distance_table)
   : MinimumSolver(_P),
-    P(_P)
+    P(_P),
+    use_distance_table(_use_distance_table),
+    preprocessing_comp_time(0),
+    distance_table(G->getNodesSize(), std::vector<int>(G->getNodesSize(), G->getNodesSize()))
 {
 }
 
 MAPD_Solver::~MAPD_Solver()
 {
+}
+
+void MAPD_Solver::solve()
+{
+  // create distance table
+  if (use_distance_table) {
+    auto t_s = Time::now();
+    info("  pre-processing, create distance table by Floyd-Warshall");
+    createDistanceTable();
+    preprocessing_comp_time = getElapsedTime(t_s);
+    info("  done, elapsed: ", preprocessing_comp_time);
+  }
+
+  start();
+  exec();
+  end();
+}
+
+void MAPD_Solver::exec()
+{
+  run();
+}
+
+int MAPD_Solver::pathDist(Node* const s, Node* const g) const
+{
+  if (use_distance_table) return distance_table[s->id][g->id];
+  return G->pathDist(s, g);
+}
+
+void MAPD_Solver::createDistanceTable()
+{
+  const int nodes_num = G->getNodesSize();
+  for (int i = 0; i < nodes_num; ++i) {
+    auto u = G->getNode(i);
+    if (u == nullptr) continue;
+    for (auto v : u->neighbor) {
+      distance_table[i][v->id] = 1;
+    }
+    distance_table[i][i] = 0;
+  }
+
+  // main loop
+  for (int k = 0; k < nodes_num; ++k) {
+    for (int i = 0; i < nodes_num; ++i) {
+      for (int j = 0; j < nodes_num; ++j) {
+        distance_table[i][j] = std::min
+          (distance_table[i][j], distance_table[i][k] + distance_table[k][j]);
+      }
+    }
+  }
 }
 
 float MAPD_Solver::getTotalServiceTime()
@@ -555,9 +608,10 @@ float MAPD_Solver::getAverageServiceTime()
 
 void MAPD_Solver::printResult()
 {
-  std::cout << "solved=" << solved << ", solver=" << std::right << std::setw(8)
-            << solver_name << ", comp_time(ms)=" << std::right << std::setw(8)
-            << getCompTime()
+  std::cout << "solved=" << solved
+            << ", solver=" << std::right << std::setw(8) << solver_name
+            << ", comp_time(ms)=" << std::right << std::setw(8) << getCompTime()
+            << " (pre=" << std::right << std::setw(8) << preprocessing_comp_time << ")"
             << ", makespan=" << std::right << std::setw(4)
             << solution.getMakespan()
             << ", service time (ave)=" << std::right << std::setw(6)
@@ -585,6 +639,7 @@ void MAPD_Solver::makeLogBasicInfo(std::ofstream& log)
   log << "service_time=" << getAverageServiceTime() << "\n";
   log << "makespan=" << solution.getMakespan() << "\n";
   log << "comp_time=" << getCompTime() << "\n";
+  log << "preprocessing_comp_time" << preprocessing_comp_time << "\n";
 }
 
 void MAPD_Solver::makeLogSolution(std::ofstream& log)
@@ -618,5 +673,4 @@ void MAPD_Solver::makeLogSolution(std::ofstream& log)
     }
     log << "\n";
   }
-
 }

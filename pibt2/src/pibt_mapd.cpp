@@ -2,8 +2,8 @@
 
 const std::string PIBT_MAPD::SOLVER_NAME = "PIBT";
 
-PIBT_MAPD::PIBT_MAPD(MAPD_Instance* _P)
-    : MAPD_Solver(_P),
+PIBT_MAPD::PIBT_MAPD(MAPD_Instance* _P, bool _use_distance_table)
+  : MAPD_Solver(_P, _use_distance_table),
       occupied_now(Agents(G->getNodesSize(), nullptr)),
       occupied_next(Agents(G->getNodesSize(), nullptr))
 {
