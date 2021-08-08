@@ -165,59 +165,6 @@ Plan MAPF_Solver::pathsToPlan(const Paths& paths)
 }
 
 // -------------------------------
-// utilities for log
-// -------------------------------
-void MAPF_Solver::makeLog(const std::string& logfile)
-{
-  std::ofstream log;
-  log.open(logfile, std::ios::out);
-  makeLogBasicInfo(log);
-  makeLogSolution(log);
-  log.close();
-}
-
-void MAPF_Solver::makeLogBasicInfo(std::ofstream& log)
-{
-  Grid* grid = reinterpret_cast<Grid*>(P->getG());
-  log << "instance=" << P->getInstanceFileName() << "\n";
-  log << "agents=" << P->getNum() << "\n";
-  log << "map_file=" << grid->getMapFileName() << "\n";
-  log << "solver=" << solver_name << "\n";
-  log << "solved=" << solved << "\n";
-  log << "soc=" << solution.getSOC() << "\n";
-  log << "lb_soc=" << getLowerBoundSOC() << "\n";
-  log << "makespan=" << solution.getMakespan() << "\n";
-  log << "lb_makespan=" << getLowerBoundMakespan() << "\n";
-  log << "comp_time=" << getCompTime() << "\n";
-}
-
-void MAPF_Solver::makeLogSolution(std::ofstream& log)
-{
-  if (log_short) return;
-
-  log << "starts=";
-  for (int i = 0; i < P->getNum(); ++i) {
-    Node* v = P->getStart(i);
-    log << "(" << v->pos.x << "," << v->pos.y << "),";
-  }
-  log << "\ngoals=";
-  for (int i = 0; i < P->getNum(); ++i) {
-    Node* v = P->getGoal(i);
-    log << "(" << v->pos.x << "," << v->pos.y << "),";
-  }
-  log << "\n";
-  log << "solution=\n";
-  for (int t = 0; t <= solution.getMakespan(); ++t) {
-    log << t << ":";
-    auto c = solution.get(t);
-    for (auto v : c) {
-      log << "(" << v->pos.x << "," << v->pos.y << "),";
-    }
-    log << "\n";
-  }
-}
-
-// -------------------------------
 // utilities for solver options
 // -------------------------------
 void MAPF_Solver::setSolverOption(std::shared_ptr<MAPF_Solver> solver,
@@ -252,6 +199,58 @@ void MAPF_Solver::printHelpWithoutOption(const std::string& solver_name)
 {
   std::cout << solver_name << "\n"
             << "  (no option)" << std::endl;
+}
+
+// -------------------------------
+// log
+// -------------------------------
+void MAPF_Solver::makeLog(const std::string& logfile)
+{
+  std::ofstream log;
+  log.open(logfile, std::ios::out);
+  makeLogBasicInfo(log);
+  makeLogSolution(log);
+  log.close();
+}
+
+void MAPF_Solver::makeLogBasicInfo(std::ofstream& log)
+{
+  Grid* grid = reinterpret_cast<Grid*>(P->getG());
+  log << "instance=" << P->getInstanceFileName() << "\n";
+  log << "agents=" << P->getNum() << "\n";
+  log << "map_file=" << grid->getMapFileName() << "\n";
+  log << "solver=" << solver_name << "\n";
+  log << "solved=" << solved << "\n";
+  log << "soc=" << solution.getSOC() << "\n";
+  log << "lb_soc=" << getLowerBoundSOC() << "\n";
+  log << "makespan=" << solution.getMakespan() << "\n";
+  log << "lb_makespan=" << getLowerBoundMakespan() << "\n";
+  log << "comp_time=" << getCompTime() << "\n";
+}
+
+void MAPF_Solver::makeLogSolution(std::ofstream& log)
+{
+  if (log_short) return;
+  log << "starts=";
+  for (int i = 0; i < P->getNum(); ++i) {
+    Node* v = P->getStart(i);
+    log << "(" << v->pos.x << "," << v->pos.y << "),";
+  }
+  log << "\ngoals=";
+  for (int i = 0; i < P->getNum(); ++i) {
+    Node* v = P->getGoal(i);
+    log << "(" << v->pos.x << "," << v->pos.y << "),";
+  }
+  log << "\n";
+  log << "solution=\n";
+  for (int t = 0; t <= solution.getMakespan(); ++t) {
+    log << t << ":";
+    auto c = solution.get(t);
+    for (auto v : c) {
+      log << "(" << v->pos.x << "," << v->pos.y << "),";
+    }
+    log << "\n";
+  }
 }
 
 // -------------------------------
@@ -538,4 +537,86 @@ MAPD_Solver::MAPD_Solver(MAPD_Instance* _P)
 
 MAPD_Solver::~MAPD_Solver()
 {
+}
+
+float MAPD_Solver::getTotalServiceTime()
+{
+  if (!solved) return false;
+  auto tasks = P->getClosedTasks();
+  return std::accumulate(tasks.begin(), tasks.end(), 0, [](float acc, Task* a) {
+    return acc + a->timestep_finished - a->timestep_appear;
+  });
+}
+
+float MAPD_Solver::getAverageServiceTime()
+{
+  return getTotalServiceTime() / P->getClosedTasks().size();
+}
+
+void MAPD_Solver::printResult()
+{
+  std::cout << "solved=" << solved << ", solver=" << std::right << std::setw(8)
+            << solver_name << ", comp_time(ms)=" << std::right << std::setw(8)
+            << getCompTime()
+            << ", makespan=" << std::right << std::setw(4)
+            << solution.getMakespan()
+            << ", service time (ave)=" << std::right << std::setw(6)
+            << getAverageServiceTime()
+            << std::endl;
+}
+
+void MAPD_Solver::makeLog(const std::string& logfile)
+{
+  std::ofstream log;
+  log.open(logfile, std::ios::out);
+  makeLogBasicInfo(log);
+  makeLogSolution(log);
+  log.close();
+}
+
+void MAPD_Solver::makeLogBasicInfo(std::ofstream& log)
+{
+  Grid* grid = reinterpret_cast<Grid*>(P->getG());
+  log << "instance=" << P->getInstanceFileName() << "\n";
+  log << "agents=" << P->getNum() << "\n";
+  log << "map_file=" << grid->getMapFileName() << "\n";
+  log << "solver=" << solver_name << "\n";
+  log << "solved=" << solved << "\n";
+  log << "service_time=" << getAverageServiceTime() << "\n";
+  log << "makespan=" << solution.getMakespan() << "\n";
+  log << "comp_time=" << getCompTime() << "\n";
+}
+
+void MAPD_Solver::makeLogSolution(std::ofstream& log)
+{
+  if (log_short) return;
+
+  log << "starts=";
+  for (int i = 0; i < P->getNum(); ++i) {
+    Node* v = P->getStart(i);
+    log << "(" << v->pos.x << "," << v->pos.y << "),";
+  }
+  log << "\n";
+  log << "task=\n";
+  for (auto task : P->getClosedTasks()) {
+    log << task->id << ":"
+        << task->loc_pickup->id << "->" << task->loc_delivery->id << ","
+        << "appear=" << task->timestep_appear << ","
+        << "finished=" << task->timestep_finished << "\n";
+  }
+  log << "solution=\n";
+  for (int t = 0; t <= solution.getMakespan(); ++t) {
+    log << t << ":";
+    auto c = solution.get(t);
+    for (int i = 0; i < (int)P->getNum(); ++i) {
+      auto v = c[i];
+      auto u = hist_targets[t][i];
+      auto task = hist_tasks[t][i];
+      log << "(" << v->pos.x << "," << v->pos.y << ")->"
+          << "(" << u->pos.x << "," << u->pos.y << "):"
+          << ((task == nullptr) ? Task::NIL : task->id) << ",";
+    }
+    log << "\n";
+  }
+
 }

@@ -130,9 +130,11 @@ public:
 public:
   virtual void makeLog(const std::string& logfile = "./result.txt");
 protected:
-  void makeLogBasicInfo(std::ofstream& log);
-  void makeLogSolution(std::ofstream& log);
+  virtual void makeLogBasicInfo(std::ofstream& log);
+  virtual void makeLogSolution(std::ofstream& log);
 
+  // -------------------------------
+  // params
 protected:
   // used for set underlying solver options
   static void setSolverOption(std::shared_ptr<MAPF_Solver> solver,
@@ -221,13 +223,32 @@ public:
   MAPF_Instance* getP() { return P; }
 };
 
+// ====================================================
+
 class MAPD_Solver : public MinimumSolver
 {
 protected:
   MAPD_Instance* const P;        // problem instance
 
+  std::vector<Nodes> hist_targets;  // time, agent -> current target
+  std::vector<Tasks> hist_tasks;  // time, agent -> assigned_task
+
 public:
-  void printResult() {}
+  void printResult();
+
+  // -------------------------------
+  // log
+public:
+  virtual void makeLog(const std::string& logfile = "./result.txt");
+protected:
+  virtual void makeLogBasicInfo(std::ofstream& log);
+  virtual void makeLogSolution(std::ofstream& log);
+
+  // -------------------------------
+  // metric
+public:
+  float getTotalServiceTime();
+  float getAverageServiceTime();
 
   // -------------------------------
   // main

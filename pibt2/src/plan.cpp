@@ -106,17 +106,44 @@ bool Plan::validate(MAPF_Instance* P) const
   return validate(P->getConfigStart(), P->getConfigGoal());
 }
 
+bool Plan::validate(MAPD_Instance* P) const
+{
+  // check tasks
+  if ((int)P->getOpenTasks().size() > 0) {
+    warn("validation, tasks remain");
+    return false;
+  }
+  auto closed_tasks = P->getClosedTasks();
+  if ((int)closed_tasks.size() != P->getTaskNum()) {
+    warn("validation, num of closed_tasks is invalid");
+    return false;
+  }
+  if (!std::all_of(closed_tasks.begin(), closed_tasks.end(),
+                   [](Task* task) { return task->loc_current == task->loc_delivery; })) {
+    warn("validation, some tasks seem to be invalid");
+    return false;
+  }
+
+  return validate(P->getConfigStart());
+}
+
 bool Plan::validate(const Config& starts, const Config& goals) const
+{
+  // check goal
+  if (!sameConfig(last(), get(getMakespan()))) {
+    warn("validation, invalid goals");
+    return false;
+  }
+  return validate(starts);
+}
+
+bool Plan::validate(const Config& starts) const
 {
   if (configs.empty()) return false;
 
-  // start and goal
+  // start
   if (!sameConfig(starts, get(0))) {
     warn("validation, invalid starts");
-    return false;
-  }
-  if (!sameConfig(goals, get(getMakespan()))) {
-    warn("validation, invalid goals");
     return false;
   }
 

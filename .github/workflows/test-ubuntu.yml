@@ -2,9 +2,9 @@ name: test_ubuntu
 
 on:
   push:
-    branches:
-      - dev
-      - public
+    # branches:
+    #   - dev
+    #   - public
     paths:
       - 'mapf/**'
       - 'tests/**'
@@ -43,4 +43,4 @@ jobs:
 
       - name: run-app
         working-directory: build
-        run: ./app -i ../instances/sample.txt -s PIBT -o result.txt -v
+        run: ./mapf -i ../instances/sample.txt -s PIBT -o result.txt -v

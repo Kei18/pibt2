@@ -2,9 +2,9 @@ name: build_visualizer_macos
 
 on:
   push:
-    branches:
-      - dev
-      - public
+    # branches:
+    #   - dev
+    #   - public
     paths:
       - 'visualizer/**'
       - '.github/workflows/build-visualizer-macos.yml'

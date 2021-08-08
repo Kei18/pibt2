@@ -15,7 +15,7 @@ struct Task {
   static constexpr int NIL = -1;
 
   Task(Node* loc_p, Node* loc_d, int t)
-    : id(++TASK_ID_CNT),
+    : id(TASK_ID_CNT++),
       loc_pickup(loc_p),
       loc_delivery(loc_d),
       loc_current(loc_p),
@@ -33,3 +33,5 @@ struct Task {
               << std::endl;
   }
 };
+
+using Tasks = std::vector<Task*>;

@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
   if (instance_file.length() == 0) {
     std::cout << "specify instance file using -i [INSTANCE-FILE], e.g.,"
               << std::endl;
-    std::cout << "> ./app -i ../instance/sample.txt" << std::endl;
+    std::cout << "> ./mapf -i ../instance/sample.txt" << std::endl;
     return 0;
   }
 

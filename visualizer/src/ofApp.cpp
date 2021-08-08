@@ -104,7 +104,17 @@ void ofApp::draw()
     for (int i = 0; i < P->num_agents; ++i) {
       if (flg_focus && i != agent_slider) continue;
       ofSetColor(Color::agents[i % Color::agents.size()]);
-      Node* g = P->config_g[i];
+      Node* g;
+      int t1 = (int)timestep_slider;
+      if (!P->config_g.empty()) {
+        g = P->config_g[i];  // mapf
+      } else if (!P->targets.empty() && t1 <= P->targets.size() - 1) {
+        g = P->targets[t1][i];  // mapd
+      } else {
+        std::cout << "invalid result file" << std::endl;
+        std::exit(1);
+      }
+
       Pos pos1 = g->pos * scale;
       int x = pos1.x + BufferSize::window_x_buffer + scale/2;
       int y = pos1.y + BufferSize::window_y_top_buffer + scale/2;
@@ -144,7 +154,15 @@ void ofApp::draw()
 
     // goal
     if (line_mode == LINE_MODE::STRAIGHT) {
-      Pos pos3 = P->config_g[i]->pos * scale;
+      Pos pos3 = v->pos;
+      if (!P->config_g.empty()) {
+        pos3 = P->config_g[i]->pos * scale;
+      } else if (!P->targets.empty() && t1 <= P->targets.size() - 1) {
+        pos3 = P->targets[t1][i]->pos * scale;
+      } else {
+        std::cout << "invalid result file" << std::endl;
+        std::exit(1);
+      }
       ofDrawLine(pos3.x + BufferSize::window_x_buffer + scale/2,
                  pos3.y + BufferSize::window_y_top_buffer + scale/2, x, y);
     } else if (line_mode == LINE_MODE::PATH) {
@@ -165,7 +183,10 @@ void ofApp::draw()
 
 
     // agent at goal
-    if (v == P->config_g[i] && !flg_logo_gen) {
+    if (!P->config_g.empty() && v == P->config_g[i] && !flg_logo_gen) {
+      ofSetColor(255,255,255);
+      ofDrawCircle(x, y, agent_rad-2);
+    } else if (!P->assigned.empty() && !P->assigned[t1].empty() && P->assigned[t1][i]) {
       ofSetColor(255,255,255);
       ofDrawCircle(x, y, agent_rad-2);
     }
@@ -193,7 +214,8 @@ void ofApp::draw()
                        + std::to_string(P->comp_time) + " ms",
                        x, y+=15);
   font_info.drawString("soc: " + std::to_string(P->soc)
-                       + ", makespan: " + std::to_string(P->makespan),
+                       + ", makespan: " + std::to_string(P->makespan)
+                       + ", service_time(ave):" + std::to_string((int)P->service_time),
                        x, y+=15);
 
   gui.draw();

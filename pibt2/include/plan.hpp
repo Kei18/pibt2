@@ -54,7 +54,9 @@ public:
 
   // check the plan is valid or not
   bool validate(MAPF_Instance* P) const;
+  bool validate(MAPD_Instance* P) const;
   bool validate(const Config& starts, const Config& goals) const;
+  bool validate(const Config& starts) const;
 
   // when updating a single path,
   // the path should be longer than this value to avoid conflicts

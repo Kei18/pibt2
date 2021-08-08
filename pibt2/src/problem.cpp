@@ -384,9 +384,26 @@ MAPD_Instance::MAPD_Instance(const std::string& _instance)
 
   // check starts
   if (num_agents <= 0) halt("invalid number of agents");
-  const int config_s_size = config_s.size();
-  if (!config_s.empty() && num_agents > config_s_size) {
-    warn("given starts are not sufficient\nrandomly create instances");
+  if (num_agents > (int)config_s.size()) {
+    if (config_s.empty()) {
+      warn("given starts are not sufficient\nrandomly create instances");
+    }
+
+    // set starts
+    const int N = G->getNodesSize();
+    std::vector<int> starts(N);
+    std::iota(starts.begin(), starts.end(), 0);
+    std::shuffle(starts.begin(), starts.end(), *MT);
+    int i = 0;
+    while (true) {
+      while (G->getNode(starts[i]) == nullptr) {
+        ++i;
+        if (i >= N) halt("number of agents is too large.");
+      }
+      config_s.push_back(G->getNode(starts[i]));
+      if ((int)config_s.size() == num_agents) break;
+      ++i;
+    }
   }
 
   // trimming
@@ -419,7 +436,7 @@ void MAPD_Instance::update()
       continue;
     }
 
-    task->timestep_finished = current_timestep;
+    task->timestep_finished = current_timestep + 1;
     TASKS_CLOSED.push_back(task);
 
     // remove from OPEN list

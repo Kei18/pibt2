@@ -1,6 +1,6 @@
 #include "../include/pibt_mapd.hpp"
 
-const std::string PIBT_MAPD::SOLVER_NAME = "PIBT_MAPD";
+const std::string PIBT_MAPD::SOLVER_NAME = "PIBT";
 
 PIBT_MAPD::PIBT_MAPD(MAPD_Instance* _P)
     : MAPD_Solver(_P),
@@ -59,20 +59,29 @@ void PIBT_MAPD::run()
   // main loop
   while (true) {
     info(" ", "elapsed:", getSolverElapsedTime(),
-         ", timestep:", P->getCurrentTimestep(),
+         ", timestep:", P->getCurrentTimestep() + 1,
          ", open_tasks:", P->getOpenTasks().size(),
          ", closed_tasks:", P->getClosedTasks().size(),
          ", task_num:", P->getTaskNum());
 
     // target assignment
     {
-      std::vector<Task*> unassigned_tasks;
+      Tasks unassigned_tasks;
       for (auto task : P->getOpenTasks()) {
         if (!task->assigned) unassigned_tasks.push_back(task);
       }
+
+      // for log
+      Nodes targets;
+      Tasks tasks;
+
       for (auto a : A) {
         // agent is already assigned task
-        if (a->task != nullptr) continue;
+        if (a->task != nullptr) {
+          targets.push_back(a->g);
+          tasks.push_back(a->task);
+          continue;
+        }
 
         // free agent, find min_distance pickup location
 
@@ -99,7 +108,13 @@ void PIBT_MAPD::run()
             a->target_task = task;
           }
         }
+
+        targets.push_back(a->g);
+        tasks.push_back(a->task);
       }
+
+      hist_targets.push_back(targets);
+      hist_tasks.push_back(tasks);
     }
 
     // planning
@@ -173,6 +188,18 @@ void PIBT_MAPD::run()
       solved = true;
       break;
     }
+  }
+
+  // align target history and plan
+  {
+    Nodes targets;
+    Tasks tasks;
+    for (auto a : A) {
+      targets.push_back(a->g);
+      tasks.push_back(a->task);
+    }
+    hist_targets.push_back(targets);
+    hist_tasks.push_back(tasks);
   }
 
   // memory clear

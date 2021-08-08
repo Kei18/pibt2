@@ -1,12 +1,16 @@
 cmake_minimum_required(VERSION 3.16)
 project(pibt2 CXX)
 
-add_subdirectory(./mapf)
+add_subdirectory(./pibt2)
 add_subdirectory(./third_party/googletest)
 
-add_executable(app app.cpp)
-target_compile_features(app PUBLIC cxx_std_17)
-target_link_libraries(app lib-mapf)
+add_executable(mapf mapf.cpp)
+target_compile_features(mapf PUBLIC cxx_std_17)
+target_link_libraries(mapf lib-mapf)
+
+add_executable(mapd mapd.cpp)
+target_compile_features(mapd PUBLIC cxx_std_17)
+target_link_libraries(mapd lib-mapf)
 
 # format
 add_custom_target(clang-format
@@ -14,7 +18,8 @@ add_custom_target(clang-format
   ../mapf/include/*.hpp
   ../mapf/src/*.cpp
   ../tests/*.cpp
-  ../app.cpp)
+  ../mapf.cpp
+  ../mapd.cpp)
 
 # test
 set(TEST_MAIN_FUNC ./third_party/googletest/googletest/src/gtest_main.cc)
