@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include <graph.hpp>
 
 static int TASK_ID_CNT = 0;
@@ -23,16 +22,6 @@ struct Task {
         timestep_appear(t),
         timestep_finished(NIL),
         assigned(false){};
-
-  void println()
-  {
-    std::cout << "task-" << id << ", " << loc_pickup->id << " -> "
-              << loc_delivery->id << ", "
-              << "loc_current=" << loc_current->id << ", "
-              << "assigned=" << assigned << ","
-              << "t_appear=" << timestep_appear << ", "
-              << "t_finished=" << timestep_finished << ", " << std::endl;
-  }
 };
 
 using Tasks = std::vector<Task*>;
