@@ -7,9 +7,10 @@ on:
       - public
       - mapd
     paths:
-      - 'mapf/**'
+      - 'pibt2/**'
       - 'tests/**'
-      - 'app.cpp'
+      - 'mapf.cpp'
+      - 'mapd.cpp'
       - '.github/workflows/test-ubuntu.yml'
 
 jobs:
