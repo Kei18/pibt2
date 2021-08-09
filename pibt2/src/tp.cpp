@@ -13,6 +13,11 @@ void TP::run()
   std::vector<Path> TOKEN(P->getNum());
   Agents A;
 
+  // initialize conflict table
+  {
+    CONFLICT_TABLE.push_back(std::vector<int>(G->getNodesSize(), NIL));
+  }
+
   for (int i = 0; i < P->getNum(); ++i) {
     Node* s = P->getStart(i);
     Agent* a = new Agent{
@@ -94,6 +99,14 @@ void TP::run()
                        })) {
         // line 14
         TOKEN[a->id].push_back(a->v_now);
+
+        // update conflict table
+        {
+          while (CONFLICT_TABLE.size() - 1 < TOKEN[a->id].size() - 1) {
+            CONFLICT_TABLE.push_back(std::vector<int>(G->getNodesSize(), NIL));
+          }
+          CONFLICT_TABLE[P->getCurrentTimestep()+1][a->v_now->id] = a->id;
+        }
 
         targets[a->id] = a->v_now;
 
@@ -185,12 +198,6 @@ void TP::updatePath1(int i, Task* task, std::vector<Path>& TOKEN)
   updatePath(i, task->loc_pickup, TOKEN);
   // find path: pickup location -> delivery location
   updatePath(i, task->loc_delivery, TOKEN);
-
-  // std::string s = "agent-" + std::to_string(i) + ": ";
-  // for (int t = P->getCurrentTimestep(); t < (int)TOKEN[i].size(); ++t) {
-  //   s += std::to_string(TOKEN[i][t]->id) + "->";
-  // }
-  // info("   ", s);
 }
 
 void TP::updatePath2(int i, std::vector<Path>& TOKEN, Tasks& unassigned_tasks)
@@ -259,22 +266,28 @@ void TP::updatePath(int i, Node* g, std::vector<Path>& TOKEN)
     return n->v == g && n->g + current_timestep > max_constraint_time;
   };
 
-  // TODO: speedup
+
+  std::vector<int> token_endpoints(G->getNodesSize(), NIL);
+  for (int j = 0; j < P->getNum(); ++j) {
+    if (j == i) continue;
+    token_endpoints[(*(TOKEN[j].end() - 1))->id] = j;
+  }
+
   CheckInvalidAstarNode checkInvalidAstarNode = [&](AstarNode* m) {
     auto t = current_timestep + m->g;
-    for (int j = 0; j < P->getNum(); ++j) {
-      if (j == i) continue;
-
-      if (TOKEN[j].size() - 1 >= t) {
-        // check vertex conflicts
-        if (TOKEN[j][t] == m->v) return true;
-        // check swap conflicts
-        if (TOKEN[j][t] == m->p->v && TOKEN[j][t-1] == m->v) return true;
-      } else {
-        // avoid endpoint
-        if (*(TOKEN[j].end() - 1) == m->v) return true;
-      }
+    // avoid endpoints
+    auto k = token_endpoints[m->v->id];
+    if (k != NIL && TOKEN[k].size() - 1 < t) return true;
+    // avoid conflicts
+    if (CONFLICT_TABLE.size() - 1 >= t) {
+      // check vertex conflicts
+      if (CONFLICT_TABLE[t][m->v->id] != NIL) return true;
+      // check swap conflicts
+      if (CONFLICT_TABLE[t][m->p->v->id] != NIL &&
+          CONFLICT_TABLE[t - 1][m->v->id] == CONFLICT_TABLE[t][m->p->v->id])
+        return true;
     }
+
     return false;
   };
 
@@ -284,8 +297,18 @@ void TP::updatePath(int i, Node* g, std::vector<Path>& TOKEN)
 
   if (path.empty()) halt("failed");
 
+  // update conflict table
+  while (CONFLICT_TABLE.size() - 1 < current_timestep + path.size() - 1) {
+    CONFLICT_TABLE.push_back(std::vector<int>(G->getNodesSize(), NIL));
+  }
+
   // update TOKEN
-  for (int _t = 1; _t < (int)path.size(); ++_t) TOKEN[i].push_back(path[_t]);
+  for (int _t = 1; _t < (int)path.size(); ++_t) {
+    TOKEN[i].push_back(path[_t]);
+
+    // update conflict table
+    CONFLICT_TABLE[current_timestep + _t][path[_t]->id] = i;
+  }
 }
 
 
