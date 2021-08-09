@@ -9,6 +9,13 @@ def get_date_str():
     return datetime.now(timezone(timedelta(hours=+9), "JST")).strftime("%Y-%m-%d-%H-%M-%S")
 
 def read_result(filename):
+    r_solved= re.compile(r"solved=(\d+)")
+    r_soc = re.compile(r"soc=(\d+)")
+    r_lb_soc = re.compile(r"lb_soc=(\d+)")
+    r_makespan = re.compile(r"makespan=(\d+)")
+    r_lb_makespan = re.compile(r"lb_makespan=(\d+)")
+    r_comp_time = re.compile(r"comp_time=(\d+)")
+
     solved, soc, lb_soc, makespan, lb_makespan, comp_time = -1, -1, -1, -1, -1, -1
     with open(result_file, 'r') as f_read:
         for row in f_read:
@@ -61,16 +68,10 @@ MAP_NAMES = [
 if __name__ == '__main__':
     r_scen = re.compile(r"\d+\t.+\.map\t\d+\t\d+\t(\d+)\t(\d+)\t(\d+)\t(\d+)\t.+")
     r_scen_file= re.compile(r"benchmark/(.+)\-random\-(\d+)\.scen")
-    r_solved= re.compile(r"solved=(\d+)")
-    r_soc = re.compile(r"soc=(\d+)")
-    r_lb_soc = re.compile(r"lb_soc=(\d+)")
-    r_makespan = re.compile(r"makespan=(\d+)")
-    r_lb_makespan = re.compile(r"lb_makespan=(\d+)")
-    r_comp_time = re.compile(r"comp_time=(\d+)")
 
     ins_file = "local/ins.txt"
     result_file = "local/result.txt"
-    command = os.path.join("..", "build", "app")
+    command = os.path.join("..", "build", "mapf")
     output_dir = os.path.join("..", "..", "data", get_date_str())
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)

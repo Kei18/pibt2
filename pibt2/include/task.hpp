@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <graph.hpp>
 
 static int TASK_ID_CNT = 0;

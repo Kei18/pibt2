@@ -622,7 +622,7 @@ void MAPD_Solver::makeLogBasicInfo(std::ofstream& log)
   log << "service_time=" << getAverageServiceTime() << "\n";
   log << "makespan=" << solution.getMakespan() << "\n";
   log << "comp_time=" << getCompTime() << "\n";
-  log << "preprocessing_comp_time" << preprocessing_comp_time << "\n";
+  log << "preprocessing_comp_time=" << preprocessing_comp_time << "\n";
 }
 
 void MAPD_Solver::makeLogSolution(std::ofstream& log)
