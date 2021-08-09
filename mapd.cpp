@@ -3,6 +3,7 @@
 #include <default_params.hpp>
 #include <iostream>
 #include <pibt_mapd.hpp>
+#include <tp.hpp>
 #include <problem.hpp>
 #include <random>
 #include <vector>
@@ -108,6 +109,8 @@ std::unique_ptr<MAPD_Solver> getSolver(const std::string solver_name, MAPD_Insta
   std::unique_ptr<MAPD_Solver> solver;
   if (solver_name == "PIBT") {
     solver = std::make_unique<PIBT_MAPD>(P, use_distance_table);
+  } else if (solver_name == "TP") {
+    solver = std::make_unique<TP>(P, use_distance_table);
   } else {
     std::cout << "warn@app: "
               << "unknown solver name, " + solver_name + ", continue by PIBT"
@@ -134,4 +137,5 @@ void printHelp()
             << "\n\nSolver Options:" << std::endl;
   // each solver
   PIBT_MAPD::printHelp();
+  TP::printHelp();
 }

@@ -42,6 +42,7 @@ add_test(test_push_and_swap ./tests/test_push_and_swap.cpp)
 add_test(test_pibt_plus ./tests/test_pibt_plus.cpp)
 # maps solvers
 add_test(test_pibt_mapd ./tests/test_pibt_mapd.cpp)
+add_test(test_tp ./tests/test_tp.cpp)
 
 add_executable(test ${TEST_ALL_SRC})
 target_link_libraries(test lib-mapf gtest)

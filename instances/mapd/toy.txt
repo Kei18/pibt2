@@ -1,8 +1,8 @@
-map_file=arena.map
-agents=100
+map_file=warehouse.map
+agents=50
 seed=0
-max_timestep=1000
-max_comp_time=1000
-random_problem=0
+max_timestep=2000
+max_comp_time=10000
 task_frequency=1
-task_num=20
+task_num=500
+specify_pickup_deliv_locs=1

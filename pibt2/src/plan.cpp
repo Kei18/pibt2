@@ -160,7 +160,7 @@ bool Plan::validate(const Config& starts) const
       Nodes cands = v_i_t_1->neighbor;
       cands.push_back(v_i_t_1);
       if (!inArray(v_i_t, cands)) {
-        warn("validation, invalid move");
+        warn("validation, invalid move at t=" + std::to_string(t));
         return false;
       }
       // see conflicts

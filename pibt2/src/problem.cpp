@@ -390,6 +390,12 @@ MAPD_Instance::MAPD_Instance(const std::string& _instance)
   if (task_frequency == 0) task_frequency = DEFAULT_TASK_FREQUENCY;
   if (task_num == 0) task_num = DEFAULT_TASK_NUM;
 
+  if (specify_pickup_deliv_locs) setupSpetialNodes();
+  if (LOCS_PICKUP.empty()) {
+    LOCS_PICKUP = G->getV();
+    LOCS_DELIVERY = G->getV();
+  }
+
   // check starts
   if (num_agents <= 0) halt("invalid number of agents");
   if (num_agents > (int)config_s.size()) {
@@ -399,16 +405,21 @@ MAPD_Instance::MAPD_Instance(const std::string& _instance)
     }
 
     // set starts
-    const int N = G->getNodesSize();
-    std::vector<int> starts(N);
+    std::vector<int> starts(G->getNodesSize());
     std::iota(starts.begin(), starts.end(), 0);
+    if (specify_pickup_deliv_locs && !LOCS_NONTASK_ENDPOINTS.empty()) {
+      starts.clear();
+      for (auto v : LOCS_NONTASK_ENDPOINTS) starts.push_back(v->id);
+    }
     std::shuffle(starts.begin(), starts.end(), *MT);
+
     int i = 0;
     while (true) {
       while (G->getNode(starts[i]) == nullptr) {
         ++i;
-        if (i >= N) halt("number of agents is too large.");
+        if (i >= (int)starts.size()) halt("number of agents is too large.");
       }
+
       config_s.push_back(G->getNode(starts[i]));
       if ((int)config_s.size() == num_agents) break;
       ++i;
@@ -417,14 +428,6 @@ MAPD_Instance::MAPD_Instance(const std::string& _instance)
 
   // trimming
   config_s.resize(num_agents);
-
-  if (specify_pickup_deliv_locs) {
-    setupSpetialNodes();
-  }
-  if (LOCS_PICKUP.empty()) {
-    LOCS_PICKUP = G->getV();
-    LOCS_DELIVERY = G->getV();
-  }
 
   // initialize
   update();
@@ -469,13 +472,20 @@ void MAPD_Instance::setupSpetialNodes()
 
       auto v = G->getNode(x, y);
       s = line[x];
+      bool flg_endpoints = false;
       if (std::regex_match(s, results, r_pickup)) {
         LOCS_PICKUP.push_back(v);
+        flg_endpoints = true;
       }
       if (std::regex_match(s, results, r_deliv)) {
         LOCS_DELIVERY.push_back(v);
+        flg_endpoints = true;
       }
       if (std::regex_match(s, results, r_end)) {
+        LOCS_NONTASK_ENDPOINTS.push_back(v);
+        flg_endpoints = true;
+      }
+      if (flg_endpoints) {
         LOCS_ENDPOINTS.push_back(v);
       }
     }

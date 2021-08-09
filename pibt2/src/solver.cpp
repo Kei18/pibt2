@@ -291,17 +291,17 @@ void MAPF_Solver::createDistanceTable()
 // -------------------------------
 // utilities for getting path
 // -------------------------------
-MAPF_Solver::AstarNode::AstarNode(Node* _v, int _g, int _f, AstarNode* _p)
+MinimumSolver::AstarNode::AstarNode(Node* _v, int _g, int _f, AstarNode* _p)
   : v(_v), g(_g), f(_f), p(_p), name(getName(_v, _g))
 {
 }
 
-std::string MAPF_Solver::AstarNode::getName(Node* _v, int _g)
+std::string MinimumSolver::AstarNode::getName(Node* _v, int _g)
 {
   return std::to_string(_v->id) + "-" + std::to_string(_g);
 }
 
-Path MAPF_Solver::getPathBySpaceTimeAstar
+Path MinimumSolver::getPathBySpaceTimeAstar
 (Node* const s,
  Node* const g,
  AstarHeuristics& fValue,
@@ -379,7 +379,7 @@ Path MAPF_Solver::getPathBySpaceTimeAstar
 }
 
 
-MAPF_Solver::CompareAstarNode MAPF_Solver::compareAstarNodeBasic =
+MinimumSolver::CompareAstarNode MinimumSolver::compareAstarNodeBasic =
   [](AstarNode* a, AstarNode* b) {
     if (a->f != b->f) return a->f > b->f;
     if (a->g != b->g) return a->g < b->g;

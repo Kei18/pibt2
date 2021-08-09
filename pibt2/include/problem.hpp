@@ -109,12 +109,13 @@ private:
   int task_num;
 
   int current_timestep;  // current timestep
-  std::vector<Task*> TASKS_OPEN;
-  std::vector<Task*> TASKS_CLOSED;
+  Tasks TASKS_OPEN;
+  Tasks TASKS_CLOSED;
 
   Nodes LOCS_PICKUP;     // candidates of pickup locations
   Nodes LOCS_DELIVERY;   // candidates of delivery locations
-  Nodes LOCS_ENDPOINTS;  // endpoints, not necessary for PIBT
+  Nodes LOCS_NONTASK_ENDPOINTS;  // endpoints, not necessary for PIBT
+  Nodes LOCS_ENDPOINTS;  // pickup, delivery, nontasks
 
   bool specify_pickup_deliv_locs;
   void setupSpetialNodes();
@@ -127,6 +128,7 @@ public:
   int getCurrentTimestep() const { return current_timestep; }
   float getTaskFrequency() const { return task_frequency; }
   float getTaskNum() const { return task_num; }
-  std::vector<Task*> getOpenTasks() { return TASKS_OPEN; }
-  std::vector<Task*> getClosedTasks() { return TASKS_CLOSED; }
+  Tasks getOpenTasks() { return TASKS_OPEN; }
+  Tasks getClosedTasks() { return TASKS_CLOSED; }
+  Nodes getEndpoints() { return LOCS_ENDPOINTS; }
 };
