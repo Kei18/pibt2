@@ -26,9 +26,8 @@ void PIBT_PLUS::run()
   auto _P = MAPF_Instance(P, P->getConfigStart(), P->getConfigGoal(),
                           max_comp_time, LB_makespan);
   auto init_solver = std::make_unique<PIBT>(&_P);
-  init_solver->setDistanceTable((distance_table_p == nullptr)
-                                ? &distance_table
-                                : distance_table_p);
+  init_solver->setDistanceTable(
+      (distance_table_p == nullptr) ? &distance_table : distance_table_p);
   info(" ", "run PIBT until timestep", LB_makespan);
   init_solver->solve();
   solution = init_solver->getSolution();
@@ -42,7 +41,7 @@ void PIBT_PLUS::run()
 
     // solved by Push & Swap
     auto _Q = MAPF_Instance(P, solution.last(), P->getConfigGoal(),
-                         getRemainedTime(), max_timestep - LB_makespan);
+                            getRemainedTime(), max_timestep - LB_makespan);
     auto comp_solver = std::make_shared<PushAndSwap>(&_Q);
 
     // set solver options
@@ -64,8 +63,7 @@ void PIBT_PLUS::run()
 void PIBT_PLUS::printHelp()
 {
   std::cout << PIBT_PLUS::SOLVER_NAME << "\n"
-      << "  (none)"
-      << std::endl;
+            << "  (none)" << std::endl;
 }
 
 void PIBT_PLUS::makeLog(const std::string& logfile)

@@ -7,10 +7,9 @@ public:
   static const std::string SOLVER_NAME;
 
 private:
-
   struct Agent {
     int id;
-    Node* v_now;        // current location
+    Node* v_now;  // current location
     Task* task;
     bool load_task;
   };

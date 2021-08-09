@@ -22,10 +22,7 @@ Node* Paths::get(int i, int t) const
   return paths[i][t];
 }
 
-Node* Paths::last(int i) const
-{
-  return get(i, makespan);
-}
+Node* Paths::last(int i) const { return get(i, makespan); }
 
 bool Paths::empty() const { return paths.empty(); }
 

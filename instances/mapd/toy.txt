@@ -1,8 +1,0 @@
-map_file=warehouse.map
-agents=50
-seed=0
-max_timestep=2000
-max_comp_time=10000
-task_frequency=1
-task_num=500
-specify_pickup_deliv_locs=1

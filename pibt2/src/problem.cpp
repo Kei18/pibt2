@@ -5,21 +5,17 @@
 
 #include "../include/util.hpp"
 
-Problem::Problem
-(std::string _instance,
- Graph* _G, std::mt19937* _MT, Config _config_s, Config _config_g,
- int _num_agents, int _max_timestep, int _max_comp_time)
-  : instance(_instance),
-    G(_G),
-    MT(_MT),
-    config_s(_config_s),
-    config_g(_config_g),
-    num_agents(_num_agents),
-    max_timestep(_max_timestep),
-    max_comp_time(_max_comp_time)
-{
-};
-
+Problem::Problem(std::string _instance, Graph* _G, std::mt19937* _MT,
+                 Config _config_s, Config _config_g, int _num_agents,
+                 int _max_timestep, int _max_comp_time)
+    : instance(_instance),
+      G(_G),
+      MT(_MT),
+      config_s(_config_s),
+      config_g(_config_g),
+      num_agents(_num_agents),
+      max_timestep(_max_timestep),
+      max_comp_time(_max_comp_time){};
 
 Node* Problem::getStart(int i) const
 {
@@ -49,7 +45,7 @@ void Problem::warn(const std::string& msg) const
 // MAPF
 
 MAPF_Instance::MAPF_Instance(const std::string& _instance)
-  : Problem(_instance), instance_initialized(true)
+    : Problem(_instance), instance_initialized(true)
 {
   // read instance file
   std::ifstream file(instance);
@@ -162,19 +158,20 @@ MAPF_Instance::MAPF_Instance(const std::string& _instance)
   config_g.resize(num_agents);
 }
 
-MAPF_Instance::MAPF_Instance(MAPF_Instance* P, Config _config_s, Config _config_g,
-                 int _max_comp_time, int _max_timestep)
-  : Problem(P->getInstanceFileName(), P->getG(), P->getMT(),
-            _config_s, _config_g, P->getNum(), _max_timestep, _max_comp_time),
-    instance_initialized(false)
+MAPF_Instance::MAPF_Instance(MAPF_Instance* P, Config _config_s,
+                             Config _config_g, int _max_comp_time,
+                             int _max_timestep)
+    : Problem(P->getInstanceFileName(), P->getG(), P->getMT(), _config_s,
+              _config_g, P->getNum(), _max_timestep, _max_comp_time),
+      instance_initialized(false)
 {
 }
 
 MAPF_Instance::MAPF_Instance(MAPF_Instance* P, int _max_comp_time)
-  :  Problem(P->getInstanceFileName(), P->getG(), P->getMT(),
-             P->getConfigStart(), P->getConfigGoal(), P->getNum(),
-             P->getMaxTimestep(), _max_comp_time),
-  instance_initialized(false)
+    : Problem(P->getInstanceFileName(), P->getG(), P->getMT(),
+              P->getConfigStart(), P->getConfigGoal(), P->getNum(),
+              P->getMaxTimestep(), _max_comp_time),
+      instance_initialized(false)
 {
 }
 
@@ -296,13 +293,10 @@ void MAPF_Instance::makeScenFile(const std::string& output_file)
   log.close();
 }
 
-
 // -------------------------------------------
 // MAPD
 MAPD_Instance::MAPD_Instance(const std::string& _instance)
-  : Problem(_instance),
-    current_timestep(-1),
-    specify_pickup_deliv_locs(true)
+    : Problem(_instance), current_timestep(-1), specify_pickup_deliv_locs(true)
 {
   // read instance file
   std::ifstream file(instance);
@@ -318,7 +312,8 @@ MAPD_Instance::MAPD_Instance(const std::string& _instance)
   std::regex r_max_comp_time = std::regex(R"(max_comp_time=(\d+))");
   std::regex r_task_num = std::regex(R"(task_num=(\d+))");
   std::regex r_task_frequency = std::regex(R"(task_frequency=(.+))");
-  std::regex r_specify_pikup_deliv_locs = std::regex(R"(specify_pikup_deliv_locs=(\d+))");
+  std::regex r_specify_pikup_deliv_locs =
+      std::regex(R"(specify_pikup_deliv_locs=(\d+))");
   std::regex r_sg = std::regex(R"((\d+),(\d+))");
 
   while (getline(file, line)) {
@@ -453,10 +448,10 @@ void MAPD_Instance::setupSpetialNodes()
 
   std::string line, s;
   std::smatch results;
-  std::regex r_obj   = std::regex(R"([@T])");
+  std::regex r_obj = std::regex(R"([@T])");
   std::regex r_pickup = std::regex(R"([psa])");  // pickup loc.
-  std::regex r_deliv  = std::regex(R"([dsa])");  // delivery loc.
-  std::regex r_end    = std::regex(R"([ea])");   // end loc.
+  std::regex r_deliv = std::regex(R"([dsa])");   // delivery loc.
+  std::regex r_end = std::regex(R"([ea])");      // end loc.
 
   const int width = grid->getWidth();
 

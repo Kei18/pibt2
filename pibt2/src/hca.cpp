@@ -81,8 +81,8 @@ Path HCA::getPrioritizedPath(int id, const Paths& paths)
     return false;
   };
 
-  const auto p = MAPF_Solver::getPrioritizedPath(id, paths, getRemainedTime(),
-                                                 max_timestep, {}, compare, false);
+  const auto p = MAPF_Solver::getPrioritizedPath(
+      id, paths, getRemainedTime(), max_timestep, {}, compare, false);
 
   // update path table
   updatePathTableWithoutClear(id, p, paths);

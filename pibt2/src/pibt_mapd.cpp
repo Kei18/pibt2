@@ -3,7 +3,7 @@
 const std::string PIBT_MAPD::SOLVER_NAME = "PIBT";
 
 PIBT_MAPD::PIBT_MAPD(MAPD_Instance* _P, bool _use_distance_table)
-  : MAPD_Solver(_P, _use_distance_table),
+    : MAPD_Solver(_P, _use_distance_table),
       occupied_now(Agents(G->getNodesSize(), nullptr)),
       occupied_next(Agents(G->getNodesSize(), nullptr))
 {
@@ -32,14 +32,15 @@ void PIBT_MAPD::run()
   // initialize
   for (int i = 0; i < P->getNum(); ++i) {
     Node* s = P->getStart(i);
-    Agent* a = new Agent{i,                          // id
-                         s,                          // current location
-                         nullptr,                    // next location
-                         s,                          // goal
-                         0,                          // elapsed
-                         getRandomFloat(0, 1, MT),   // tie-breaker
-                         nullptr,                    // task (assigned)
-                         nullptr,                    // target_task (if free)
+    Agent* a = new Agent{
+        i,                         // id
+        s,                         // current location
+        nullptr,                   // next location
+        s,                         // goal
+        0,                         // elapsed
+        getRandomFloat(0, 1, MT),  // tie-breaker
+        nullptr,                   // task (assigned)
+        nullptr,                   // target_task (if free)
     };
     undecided.push(a);
     occupied_now[s->id] = a;
@@ -47,7 +48,7 @@ void PIBT_MAPD::run()
   }
   solution.add(P->getConfigStart());
 
-  auto assign = [&] (Agent* a, Task* task) {
+  auto assign = [&](Agent* a, Task* task) {
     a->task = task;
     a->target_task = nullptr;
     a->task->assigned = true;
@@ -91,8 +92,8 @@ void PIBT_MAPD::run()
         int min_d = P->getG()->getNodesSize();
 
         std::shuffle(unassigned_tasks.begin(), unassigned_tasks.end(), *MT);
-        for (auto itr = unassigned_tasks.begin();
-             itr != unassigned_tasks.end(); ++itr) {
+        for (auto itr = unassigned_tasks.begin(); itr != unassigned_tasks.end();
+             ++itr) {
           auto task = *itr;
           int d = pathDist(a->v_now, task->loc_pickup);
           if (d == 0) {
@@ -167,7 +168,6 @@ void PIBT_MAPD::run()
           assign(a, a->target_task);
         }
       }
-
     }
     decided.clear();
 
@@ -286,10 +286,4 @@ Node* PIBT_MAPD::chooseNode(Agent* a)
   return v;
 }
 
-void PIBT_MAPD::printHelp()
-{
-  std::cout << PIBT_MAPD::SOLVER_NAME << "\n"
-            << "  (none)"
-            << "        "
-            << std::endl;
-}
+void PIBT_MAPD::printHelp() { printHelpWithoutOption(SOLVER_NAME); }

@@ -15,8 +15,8 @@ target_link_libraries(mapd lib-mapf)
 # format
 add_custom_target(clang-format
   COMMAND clang-format -i
-  ../mapf/include/*.hpp
-  ../mapf/src/*.cpp
+  ../pibt2/include/*.hpp
+  ../pibt2/src/*.cpp
   ../tests/*.cpp
   ../mapf.cpp
   ../mapd.cpp)

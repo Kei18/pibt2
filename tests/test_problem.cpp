@@ -1,5 +1,5 @@
-#include <problem.hpp>
 #include <plan.hpp>
+#include <problem.hpp>
 
 #include "gtest/gtest.h"
 

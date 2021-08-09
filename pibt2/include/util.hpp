@@ -27,7 +27,8 @@ static bool inArray(const T a, const std::vector<T>& arr)
 }
 
 // return [from, to]
-[[maybe_unused]] static int getRandomInt(int from, int to, std::mt19937* const MT)
+[[maybe_unused]] static int getRandomInt(int from, int to,
+                                         std::mt19937* const MT)
 {
   std::uniform_int_distribution<int> r(from, to);
   return r(*MT);
@@ -52,5 +53,6 @@ static T randomChoose(const std::vector<T>& arr, std::mt19937* const MT)
 [[maybe_unused]] static double getElapsedTime(const Time::time_point& t_start)
 {
   auto t_end = Time::now();
-  return std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
+  return std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start)
+      .count();
 }

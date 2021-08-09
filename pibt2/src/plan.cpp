@@ -118,8 +118,9 @@ bool Plan::validate(MAPD_Instance* P) const
     warn("validation, num of closed_tasks is invalid");
     return false;
   }
-  if (!std::all_of(closed_tasks.begin(), closed_tasks.end(),
-                   [](Task* task) { return task->loc_current == task->loc_delivery; })) {
+  if (!std::all_of(closed_tasks.begin(), closed_tasks.end(), [](Task* task) {
+        return task->loc_current == task->loc_delivery;
+      })) {
     warn("validation, some tasks seem to be invalid");
     return false;
   }

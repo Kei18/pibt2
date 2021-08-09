@@ -4,15 +4,15 @@
 #include <iomanip>
 
 MinimumSolver::MinimumSolver(Problem* _P)
-  : solver_name(""),
-    G(_P->getG()),
-    MT(_P->getMT()),
-    max_timestep(_P->getMaxTimestep()),
-    max_comp_time(_P->getMaxCompTime()),
-    solved(false),
-    comp_time(0),
-    verbose(false),
-    log_short(false)
+    : solver_name(""),
+      G(_P->getG()),
+      MT(_P->getMT()),
+      max_timestep(_P->getMaxTimestep()),
+      max_comp_time(_P->getMaxCompTime()),
+      solved(false),
+      comp_time(0),
+      verbose(false),
+      log_short(false)
 {
 }
 
@@ -23,21 +23,18 @@ void MinimumSolver::solve()
   end();
 }
 
-void MinimumSolver::start()
-{
-  t_start = Time::now();
-}
+void MinimumSolver::start() { t_start = Time::now(); }
 
-void MinimumSolver::end()
-{
-  comp_time = getSolverElapsedTime();
-}
+void MinimumSolver::end() { comp_time = getSolverElapsedTime(); }
 
 // -------------------------------
 // utilities for time
 // -------------------------------
 
-int MinimumSolver::getSolverElapsedTime() const { return getElapsedTime(t_start); }
+int MinimumSolver::getSolverElapsedTime() const
+{
+  return getElapsedTime(t_start);
+}
 
 int MinimumSolver::getRemainedTime() const
 {
@@ -69,25 +66,22 @@ void MinimumSolver::warn(const std::string& msg) const
   std::cout << "warn@ " << solver_name << ": " << msg << std::endl;
 }
 
-
 // -----------------------------------------------
 // base class with utilities
 // -----------------------------------------------
 
 MAPF_Solver::MAPF_Solver(MAPF_Instance* _P)
-  : MinimumSolver(_P),
-    P(_P),
-    LB_soc(0),
-    LB_makespan(0),
-    distance_table(_P->getNum(),
-                   std::vector<int>(G->getNodesSize(), max_timestep)),
-    distance_table_p(nullptr)
+    : MinimumSolver(_P),
+      P(_P),
+      LB_soc(0),
+      LB_makespan(0),
+      distance_table(_P->getNum(),
+                     std::vector<int>(G->getNodesSize(), max_timestep)),
+      distance_table_p(nullptr)
 {
 }
 
-MAPF_Solver::~MAPF_Solver()
-{
-}
+MAPF_Solver::~MAPF_Solver() {}
 
 // -------------------------------
 // main
@@ -168,7 +162,7 @@ Plan MAPF_Solver::pathsToPlan(const Paths& paths)
 // utilities for solver options
 // -------------------------------
 void MAPF_Solver::setSolverOption(std::shared_ptr<MAPF_Solver> solver,
-                             const std::vector<std::string>& option)
+                                  const std::vector<std::string>& option)
 {
   if (option.empty()) return;
   const int argc = option.size() + 1;
@@ -195,7 +189,7 @@ void MAPF_Solver::printResult()
             << getLowerBoundMakespan() << ")" << std::endl;
 }
 
-void MAPF_Solver::printHelpWithoutOption(const std::string& solver_name)
+void MinimumSolver::printHelpWithoutOption(const std::string& solver_name)
 {
   std::cout << solver_name << "\n"
             << "  (no option)" << std::endl;
@@ -264,7 +258,10 @@ int MAPF_Solver::pathDist(const int i, Node* const s) const
   return distance_table[i][s->id];
 }
 
-int MAPF_Solver::pathDist(const int i) const { return pathDist(i, P->getStart(i)); }
+int MAPF_Solver::pathDist(const int i) const
+{
+  return pathDist(i, P->getStart(i));
+}
 
 void MAPF_Solver::createDistanceTable()
 {
@@ -292,7 +289,7 @@ void MAPF_Solver::createDistanceTable()
 // utilities for getting path
 // -------------------------------
 MinimumSolver::AstarNode::AstarNode(Node* _v, int _g, int _f, AstarNode* _p)
-  : v(_v), g(_g), f(_f), p(_p), name(getName(_v, _g))
+    : v(_v), g(_g), f(_f), p(_p), name(getName(_v, _g))
 {
 }
 
@@ -301,14 +298,10 @@ std::string MinimumSolver::AstarNode::getName(Node* _v, int _g)
   return std::to_string(_v->id) + "-" + std::to_string(_g);
 }
 
-Path MinimumSolver::getPathBySpaceTimeAstar
-(Node* const s,
- Node* const g,
- AstarHeuristics& fValue,
- CompareAstarNode& compare,
- CheckAstarFin& checkAstarFin,
- CheckInvalidAstarNode& checkInvalidAstarNode,
- const int time_limit)
+Path MinimumSolver::getPathBySpaceTimeAstar(
+    Node* const s, Node* const g, AstarHeuristics& fValue,
+    CompareAstarNode& compare, CheckAstarFin& checkAstarFin,
+    CheckInvalidAstarNode& checkInvalidAstarNode, const int time_limit)
 {
   auto t_start = Time::now();
 
@@ -378,22 +371,18 @@ Path MinimumSolver::getPathBySpaceTimeAstar
   return path;
 }
 
-
 MinimumSolver::CompareAstarNode MinimumSolver::compareAstarNodeBasic =
-  [](AstarNode* a, AstarNode* b) {
-    if (a->f != b->f) return a->f > b->f;
-    if (a->g != b->g) return a->g < b->g;
-    return false;
-  };
+    [](AstarNode* a, AstarNode* b) {
+      if (a->f != b->f) return a->f > b->f;
+      if (a->g != b->g) return a->g < b->g;
+      return false;
+    };
 
-Path MAPF_Solver::getPrioritizedPath
-(const int id,
- const Paths& paths,
- const int time_limit,
- const int upper_bound,
- const std::vector<std::tuple<Node*, int>>& constraints,
- CompareAstarNode& compare,
- const bool manage_path_table)
+Path MAPF_Solver::getPrioritizedPath(
+    const int id, const Paths& paths, const int time_limit,
+    const int upper_bound,
+    const std::vector<std::tuple<Node*, int>>& constraints,
+    CompareAstarNode& compare, const bool manage_path_table)
 {
   Node* const s = P->getStart(id);
   Node* const g = P->getGoal(id);
@@ -500,7 +489,7 @@ void MAPF_Solver::clearPathTable(const Paths& paths)
 }
 
 void MAPF_Solver::updatePathTableWithoutClear(const int id, const Path& p,
-                                         const Paths& paths)
+                                              const Paths& paths)
 {
   if (p.empty()) return;
 
@@ -530,17 +519,16 @@ void MAPF_Solver::updatePathTableWithoutClear(const int id, const Path& p,
 //-----------------------------------------------------
 // MAPD Solver
 MAPD_Solver::MAPD_Solver(MAPD_Instance* _P, bool _use_distance_table)
-  : MinimumSolver(_P),
-    P(_P),
-    use_distance_table(_use_distance_table),
-    preprocessing_comp_time(0),
-    distance_table(G->getNodesSize(), std::vector<int>(G->getNodesSize(), G->getNodesSize()))
+    : MinimumSolver(_P),
+      P(_P),
+      use_distance_table(_use_distance_table),
+      preprocessing_comp_time(0),
+      distance_table(G->getNodesSize(),
+                     std::vector<int>(G->getNodesSize(), G->getNodesSize()))
 {
 }
 
-MAPD_Solver::~MAPD_Solver()
-{
-}
+MAPD_Solver::~MAPD_Solver() {}
 
 void MAPD_Solver::solve()
 {
@@ -558,10 +546,7 @@ void MAPD_Solver::solve()
   end();
 }
 
-void MAPD_Solver::exec()
-{
-  run();
-}
+void MAPD_Solver::exec() { run(); }
 
 int MAPD_Solver::pathDist(Node* const s, Node* const g) const
 {
@@ -585,8 +570,8 @@ void MAPD_Solver::createDistanceTable()
   for (int k = 0; k < nodes_num; ++k) {
     for (int i = 0; i < nodes_num; ++i) {
       for (int j = 0; j < nodes_num; ++j) {
-        distance_table[i][j] = std::min
-          (distance_table[i][j], distance_table[i][k] + distance_table[k][j]);
+        distance_table[i][j] = std::min(
+            distance_table[i][j], distance_table[i][k] + distance_table[k][j]);
       }
     }
   }
@@ -608,15 +593,13 @@ float MAPD_Solver::getAverageServiceTime()
 
 void MAPD_Solver::printResult()
 {
-  std::cout << "solved=" << solved
-            << ", solver=" << std::right << std::setw(8) << solver_name
-            << ", comp_time(ms)=" << std::right << std::setw(8) << getCompTime()
-            << " (pre=" << std::right << std::setw(8) << preprocessing_comp_time << ")"
+  std::cout << "solved=" << solved << ", solver=" << std::right << std::setw(8)
+            << solver_name << ", comp_time(ms)=" << std::right << std::setw(8)
+            << getCompTime() << " (pre=" << std::right << std::setw(8)
+            << preprocessing_comp_time << ")"
             << ", makespan=" << std::right << std::setw(4)
-            << solution.getMakespan()
-            << ", service time (ave)=" << std::right << std::setw(6)
-            << getAverageServiceTime()
-            << std::endl;
+            << solution.getMakespan() << ", service time (ave)=" << std::right
+            << std::setw(6) << getAverageServiceTime() << std::endl;
 }
 
 void MAPD_Solver::makeLog(const std::string& logfile)
@@ -654,8 +637,8 @@ void MAPD_Solver::makeLogSolution(std::ofstream& log)
   log << "\n";
   log << "task=\n";
   for (auto task : P->getClosedTasks()) {
-    log << task->id << ":"
-        << task->loc_pickup->id << "->" << task->loc_delivery->id << ","
+    log << task->id << ":" << task->loc_pickup->id << "->"
+        << task->loc_delivery->id << ","
         << "appear=" << task->timestep_appear << ","
         << "finished=" << task->timestep_finished << "\n";
   }
@@ -668,8 +651,8 @@ void MAPD_Solver::makeLogSolution(std::ofstream& log)
       auto u = hist_targets[t][i];
       auto task = hist_tasks[t][i];
       log << "(" << v->pos.x << "," << v->pos.y << ")->"
-          << "(" << u->pos.x << "," << u->pos.y << "):"
-          << ((task == nullptr) ? Task::NIL : task->id) << ",";
+          << "(" << u->pos.x << "," << u->pos.y
+          << "):" << ((task == nullptr) ? Task::NIL : task->id) << ",";
     }
     log << "\n";
   }

@@ -5,7 +5,10 @@
 const std::string PushAndSwap::SOLVER_NAME = "PushAndSwap";
 
 PushAndSwap::PushAndSwap(MAPF_Instance* _P)
-  : MAPF_Solver(_P), flg_compress(true), disable_dist_init(false), emergency_stop(false)
+    : MAPF_Solver(_P),
+      flg_compress(true),
+      disable_dist_init(false),
+      emergency_stop(false)
 {
   solver_name = PushAndSwap::SOLVER_NAME;
 }
@@ -54,7 +57,6 @@ void PushAndSwap::run()
   }
 
   if (emergency_stop) solution.clear();
-
 
   // compress solution
   if (flg_compress) {

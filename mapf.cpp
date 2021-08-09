@@ -5,14 +5,15 @@
 #include <iostream>
 #include <pibt.hpp>
 #include <pibt_plus.hpp>
-#include <push_and_swap.hpp>
 #include <problem.hpp>
+#include <push_and_swap.hpp>
 #include <random>
 #include <vector>
 
 void printHelp();
-std::unique_ptr<MAPF_Solver> getSolver(const std::string solver_name, MAPF_Instance* P,
-                                       bool verbose, int argc, char* argv[]);
+std::unique_ptr<MAPF_Solver> getSolver(const std::string solver_name,
+                                       MAPF_Instance* P, bool verbose, int argc,
+                                       char* argv[]);
 
 int main(int argc, char* argv[])
 {
@@ -41,8 +42,8 @@ int main(int argc, char* argv[])
   // command line args
   int opt, longindex;
   opterr = 0;  // ignore getopt error
-  while ((opt = getopt_long(argc, argv, "i:o:s:vhPT:L", longopts, &longindex)) !=
-         -1) {
+  while ((opt = getopt_long(argc, argv, "i:o:s:vhPT:L", longopts,
+                            &longindex)) != -1) {
     switch (opt) {
       case 'i':
         instance_file = std::string(optarg);
@@ -60,8 +61,8 @@ int main(int argc, char* argv[])
         printHelp();
         return 0;
       case 'P':
-          make_scen = true;
-          break;
+        make_scen = true;
+        break;
       case 'L':
         log_short = true;
         break;
@@ -97,7 +98,7 @@ int main(int argc, char* argv[])
   solver->setLogShort(log_short);
   solver->solve();
   if (solver->succeed() && !solver->getSolution().validate(&P)) {
-    std::cout << "error@app: invalid results" << std::endl;
+    std::cout << "error@mapf: invalid results" << std::endl;
     return 0;
   }
   solver->printResult();
@@ -111,8 +112,9 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-std::unique_ptr<MAPF_Solver> getSolver(const std::string solver_name, MAPF_Instance* P,
-                                  bool verbose, int argc, char* argv[])
+std::unique_ptr<MAPF_Solver> getSolver(const std::string solver_name,
+                                       MAPF_Instance* P, bool verbose, int argc,
+                                       char* argv[])
 {
   std::unique_ptr<MAPF_Solver> solver;
   if (solver_name == "PIBT") {
@@ -124,7 +126,7 @@ std::unique_ptr<MAPF_Solver> getSolver(const std::string solver_name, MAPF_Insta
   } else if (solver_name == "PushAndSwap") {
     solver = std::make_unique<PushAndSwap>(P);
   } else {
-    std::cout << "warn@app: "
+    std::cout << "warn@mapf: "
               << "unknown solver name, " + solver_name + ", continue by PIBT"
               << std::endl;
     solver = std::make_unique<PIBT>(P);
@@ -136,7 +138,7 @@ std::unique_ptr<MAPF_Solver> getSolver(const std::string solver_name, MAPF_Insta
 
 void printHelp()
 {
-  std::cout << "\nUsage: ./app [OPTIONS] [SOLVER-OPTIONS]\n"
+  std::cout << "\nUsage: ./mapf [OPTIONS] [SOLVER-OPTIONS]\n"
             << "\n**instance file is necessary to run MAPF simulator**\n\n"
             << "  -i --instance [FILE_PATH]     instance file path\n"
             << "  -o --output [FILE_PATH]       ouptut file path\n"

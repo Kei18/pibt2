@@ -3,14 +3,15 @@
 #include <default_params.hpp>
 #include <iostream>
 #include <pibt_mapd.hpp>
-#include <tp.hpp>
 #include <problem.hpp>
 #include <random>
+#include <tp.hpp>
 #include <vector>
 
 void printHelp();
-std::unique_ptr<MAPD_Solver> getSolver(const std::string solver_name, MAPD_Instance* P,
-                                       bool verbose, int argc, char* argv[], bool use_distance_table);
+std::unique_ptr<MAPD_Solver> getSolver(const std::string solver_name,
+                                       MAPD_Instance* P, bool verbose, int argc,
+                                       char* argv[], bool use_distance_table);
 
 int main(int argc, char* argv[])
 {
@@ -39,7 +40,8 @@ int main(int argc, char* argv[])
   // command line args
   int opt, longindex;
   opterr = 0;  // ignore getopt error
-  while ((opt = getopt_long(argc, argv, "i:o:s:vhT:Ld", longopts, &longindex)) != -1) {
+  while ((opt = getopt_long(argc, argv, "i:o:s:vhT:Ld", longopts,
+                            &longindex)) != -1) {
     switch (opt) {
       case 'i':
         instance_file = std::string(optarg);
@@ -84,11 +86,12 @@ int main(int argc, char* argv[])
   if (max_comp_time != -1) P.setMaxCompTime(max_comp_time);
 
   // solve
-  auto solver = getSolver(solver_name, &P, verbose, argc, argv_copy, use_distance_table);
+  auto solver =
+      getSolver(solver_name, &P, verbose, argc, argv_copy, use_distance_table);
   solver->setLogShort(log_short);
   solver->solve();
   if (solver->succeed() && !solver->getSolution().validate(&P)) {
-    std::cout << "error@app: invalid results" << std::endl;
+    std::cout << "error@mapd: invalid results" << std::endl;
     return 0;
   }
   solver->printResult();
@@ -102,9 +105,9 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-std::unique_ptr<MAPD_Solver> getSolver(const std::string solver_name, MAPD_Instance* P,
-                                       bool verbose, int argc, char* argv[],
-                                       bool use_distance_table)
+std::unique_ptr<MAPD_Solver> getSolver(const std::string solver_name,
+                                       MAPD_Instance* P, bool verbose, int argc,
+                                       char* argv[], bool use_distance_table)
 {
   std::unique_ptr<MAPD_Solver> solver;
   if (solver_name == "PIBT") {
@@ -112,7 +115,7 @@ std::unique_ptr<MAPD_Solver> getSolver(const std::string solver_name, MAPD_Insta
   } else if (solver_name == "TP") {
     solver = std::make_unique<TP>(P, use_distance_table);
   } else {
-    std::cout << "warn@app: "
+    std::cout << "warn@mapd: "
               << "unknown solver name, " + solver_name + ", continue by PIBT"
               << std::endl;
     solver = std::make_unique<PIBT_MAPD>(P, use_distance_table);
@@ -124,17 +127,18 @@ std::unique_ptr<MAPD_Solver> getSolver(const std::string solver_name, MAPD_Insta
 
 void printHelp()
 {
-  std::cout << "\nUsage: ./app [OPTIONS] [SOLVER-OPTIONS]\n"
-            << "\n**instance file is necessary to run MAPF simulator**\n\n"
-            << "  -i --instance [FILE_PATH]     instance file path\n"
-            << "  -o --output [FILE_PATH]       ouptut file path\n"
-            << "  -v --verbose                  print additional info\n"
-            << "  -h --help                     help\n"
-            << "  -d --use-distance-table       use pre-computed distance table\n"
-            << "  -s --solver [SOLVER_NAME]     solver, choose from the below\n"
-            << "  -T --time-limit [INT]         max computation time (ms)\n"
-            << "  -L --log-short                use short log\n"
-            << "\n\nSolver Options:" << std::endl;
+  std::cout
+      << "\nUsage: ./mapd [OPTIONS] [SOLVER-OPTIONS]\n"
+      << "\n**instance file is necessary to run MAPD simulator**\n\n"
+      << "  -i --instance [FILE_PATH]     instance file path\n"
+      << "  -o --output [FILE_PATH]       ouptut file path\n"
+      << "  -v --verbose                  print additional info\n"
+      << "  -h --help                     help\n"
+      << "  -d --use-distance-table       use pre-computed distance table\n"
+      << "  -s --solver [SOLVER_NAME]     solver, choose from the below\n"
+      << "  -T --time-limit [INT]         max computation time (ms)\n"
+      << "  -L --log-short                use short log\n"
+      << "\nSolver Options:" << std::endl;
   // each solver
   PIBT_MAPD::printHelp();
   TP::printHelp();
