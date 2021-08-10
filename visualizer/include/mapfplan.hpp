@@ -15,6 +15,10 @@ struct MAPFPlan {
   Config config_s;        // start configuration
   Config config_g;        // goal configuration
   Configs transitions;    // plan
+  // for MAPD
+  float service_time;     // service_time
+  Configs targets;        // targets
+  std::vector<std::vector<bool>> assigned;  // as
 
   ~MAPFPlan() { delete G; }
 };

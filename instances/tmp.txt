@@ -1,7 +1,0 @@
-map_file=ost003d.map
-agents=100
-seed=1
-random_problem=1
-max_timestep=100000
-max_comp_time=5000
-well_formed=0

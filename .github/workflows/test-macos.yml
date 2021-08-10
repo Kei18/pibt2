@@ -5,10 +5,12 @@ on:
     branches:
       - dev
       - public
+      - mapd
     paths:
-      - 'mapf/**'
+      - 'pibt2/**'
       - 'tests/**'
-      - 'app.cpp'
+      - 'mapf.cpp'
+      - 'mapd.cpp'
       - '.github/workflows/test-macos.yml'
 
 jobs:
@@ -28,7 +30,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           repository: Kei18/grid-pathfinding
-          token: ${{ secrets.PERSONAL_TOKEN }}
           path: third_party/grid-pathfinding
 
       - name: build
@@ -44,4 +45,6 @@ jobs:
 
       - name: run-app
         working-directory: build
-        run: ./app -i ../instances/sample.txt -s PIBT -o result.txt -v
+        run: |
+          ./mapf -i ../instances/mapf/sample.txt -s PIBT -o result.txt -v
+          ./mapd -i ../instances/mapd/sample.txt -s PIBT -o result.txt -v

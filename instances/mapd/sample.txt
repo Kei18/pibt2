@@ -1,0 +1,31 @@
+## ==== necessary ====
+## .map file, put your maps in /map folder
+map_file=warehouse.map
+
+## number of agents
+agents=50
+
+## ==== custom =======
+## seed of randomization
+seed=0
+
+## timestep limit
+max_timestep=3000
+
+## computation time limit, ms
+max_comp_time=10000
+
+## task frequency, 0-1, 2, 3, ...
+task_frequency=1
+
+## number of tasks
+task_num=500
+
+## specify pickup and delivery location, use .pd file
+specify_pickup_deliv_locs=1
+
+## custom starts
+## (x_s, y_s)
+## (0, 0): left-top corner
+# 0,0
+# 3,1

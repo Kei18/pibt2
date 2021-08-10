@@ -4,7 +4,7 @@
 
 TEST(PushAndSwap, ins_tree)
 {
-  Problem P = Problem("../tests/instances/tree.txt");
+  auto P = MAPF_Instance("../tests/instances/tree.txt");
   auto solver = std::make_unique<PushAndSwap>(&P);
   solver->solve();
 
@@ -14,7 +14,7 @@ TEST(PushAndSwap, ins_tree)
 
 TEST(PushAndSwap, ins_corners)
 {
-  Problem P = Problem("../tests/instances/corners.txt");
+  auto P = MAPF_Instance("../tests/instances/corners.txt");
   auto solver = std::make_unique<PushAndSwap>(&P);
   solver->solve();
 
@@ -24,7 +24,7 @@ TEST(PushAndSwap, ins_corners)
 
 TEST(PushAndSwap, ins_tunnel)
 {
-  Problem P = Problem("../tests/instances/tunnel.txt");
+  auto P = MAPF_Instance("../tests/instances/tunnel.txt");
   auto solver = std::make_unique<PushAndSwap>(&P);
   solver->solve();
 
@@ -34,7 +34,7 @@ TEST(PushAndSwap, ins_tunnel)
 
 TEST(PushAndSwap, ins_string)
 {
-  Problem P = Problem("../tests/instances/string.txt");
+  auto P = MAPF_Instance("../tests/instances/string.txt");
   auto solver = std::make_unique<PushAndSwap>(&P);
   solver->solve();
 
@@ -44,7 +44,7 @@ TEST(PushAndSwap, ins_string)
 
 TEST(PushAndSwap, ins_loop_chain)
 {
-  Problem P = Problem("../tests/instances/loop-chain.txt");
+  auto P = MAPF_Instance("../tests/instances/loop-chain.txt");
   auto solver = std::make_unique<PushAndSwap>(&P);
   solver->solve();
 
@@ -54,7 +54,7 @@ TEST(PushAndSwap, ins_loop_chain)
 
 TEST(PushAndSwap, ins_connector)
 {
-  Problem P = Problem("../tests/instances/connector.txt");
+  auto P = MAPF_Instance("../tests/instances/connector.txt");
   auto solver = std::make_unique<PushAndSwap>(&P);
   solver->solve();
 

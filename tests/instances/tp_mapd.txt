@@ -1,0 +1,7 @@
+map_file=6x6.map
+agents=2
+seed=0
+max_timestep=20
+max_comp_time=1000
+task_frequency=1
+task_num=2
