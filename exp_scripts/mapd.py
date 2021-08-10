@@ -40,7 +40,7 @@ MAP_NAMES = [ "warehouse.map", ]
 TASK_FREQS = [ 0.2, 0.5, 1, 2, 5, 10 ]
 NUM_AGENTS = [ 10, 20, 30, 40, 50 ]
 TASK_NUM = 500
-REPEAT_NUM = 2
+REPEAT_NUM = 100
 
 if __name__ == '__main__':
     ins_file = "local/ins.txt"
