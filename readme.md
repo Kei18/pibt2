@@ -177,7 +177,7 @@ The experimental scripts are written in Python3.7.
 
 | Exp | used version | scripts |
 | :--- | :--- | :--- |
-| MAPF |  | `exp_scripts/mapf.py` |
+| MAPF | [![exp\_mapf](https://img.shields.io/badge/tag-exp__mapf-blue)](https://github.com/Kei18/pibt2/releases/tag/exp%2Fmapf) | `exp_scripts/mapf.py` |
 | MAPD |  | `exp_scripts/mapd.py` |
 
 
