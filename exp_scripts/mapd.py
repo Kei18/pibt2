@@ -2,6 +2,7 @@ import os
 import re
 import csv
 import subprocess
+import tqdm
 from itertools import product
 from datetime import datetime, timedelta, timezone
 
