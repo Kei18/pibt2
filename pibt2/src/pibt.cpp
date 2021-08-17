@@ -108,84 +108,54 @@ void PIBT::run()
   }
 }
 
-bool PIBT::funcPIBT(Agent* ai)
+bool PIBT::funcPIBT(Agent* ai, Agent* aj)
 {
-  // decide next node
-  Node* v = planOneStep(ai);
-  while (v != nullptr) {
-    auto aj = occupied_now[v->id];
-    if (aj != nullptr) {  // someone occupies v
-      // avoid itself && allow rotations
-      if (aj != ai && aj->v_next == nullptr) {
-        // do priority inheritance and backtracking
-        if (!funcPIBT(aj)) {
-          // replan
-          v = planOneStep(ai);
-          continue;
-        }
-      }
+  // compare two nodes
+  auto compare = [&] (Node* const v, Node* const u) {
+    int d_v = pathDist(ai->id, v);
+    int d_u = pathDist(ai->id, u);
+    if (d_v != d_u) return d_v > d_u;
+    // tie break
+    if (occupied_now[v->id] != nullptr
+        && occupied_now[u->id] == nullptr) return true;
+    if (occupied_now[v->id] == nullptr
+        && occupied_now[u->id] != nullptr) return false;
+    return false;
+  };
+
+  // candidates
+  std::priority_queue<Node*, Nodes, decltype(compare)> C(compare);
+  Nodes _C = ai->v_now->neighbor;
+  _C.push_back(ai->v_now);
+  std::shuffle(_C.begin(), _C.end(), *MT);;
+
+  for (auto u : _C) {
+    if (occupied_next[u->id] != nullptr) continue;  // vertex conflict
+    if (aj != nullptr && u == aj->v_now) continue;  // swap conflict
+    C.push(u);
+  }
+
+  while (!C.empty()) {
+    auto u = C.top();
+    C.pop();
+
+    if (occupied_next[u->id] != nullptr) continue;  // vertex conflict
+
+    occupied_next[u->id] = ai;
+    ai->v_next = u;
+
+    auto ak = occupied_now[u->id];
+    if (ak != nullptr && ak->v_next == nullptr) {
+      if (!funcPIBT(ak, ai)) continue;
     }
     // success to plan next one step
     return true;
   }
+
   // failed to secure node, cope stuck
   occupied_next[ai->v_now->id] = ai;
   ai->v_next = ai->v_now;
   return false;
-}
-
-/*
- * no candidate node -> return nullptr
- */
-Node* PIBT::planOneStep(Agent* a)
-{
-  Node* v = chooseNode(a);
-  if (v != nullptr) {
-    // update reservation
-    occupied_next[v->id] = a;
-    a->v_next = v;
-  }
-  return v;
-}
-
-// no candidate node -> return nullptr
-Node* PIBT::chooseNode(Agent* a)
-{
-  // candidates
-  Nodes C = a->v_now->neighbor;
-  C.push_back(a->v_now);
-
-  // randomize
-  std::shuffle(C.begin(), C.end(), *MT);
-
-  // desired node
-  Node* v = nullptr;
-
-  // pickup one node
-  for (auto u : C) {
-    // avoid vertex conflict
-    if (occupied_next[u->id] != nullptr) continue;
-    // avoid swap conflict
-    auto a_j = occupied_now[u->id];
-    if (a_j != nullptr && a_j->v_next == a->v_now) continue;
-
-    // goal exists -> return immediately
-    if (u == a->g) return u;
-
-    // determine the next node
-    if (v == nullptr) {
-      v = u;
-    } else {
-      int c_v = pathDist(a->id, v);
-      int c_u = pathDist(a->id, u);
-      if ((c_u < c_v) || (c_u == c_v && occupied_now[v->id] != nullptr &&
-                          occupied_now[u->id] == nullptr)) {
-        v = u;
-      }
-    }
-  }
-
-  return v;
 }
 
 void PIBT::setParams(int argc, char* argv[])
