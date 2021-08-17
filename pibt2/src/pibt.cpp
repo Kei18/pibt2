@@ -19,7 +19,7 @@ void PIBT::run()
     if (a->init_d != b->init_d) return a->init_d > b->init_d;
     return a->tie_breaker > b->tie_breaker;
   };
-  Agents U;
+  Agents A;
 
   // initialize
   for (int i = 0; i < P->getNum(); ++i) {
@@ -33,7 +33,7 @@ void PIBT::run()
                          0,                          // elapsed
                          d,                          // dist from s -> g
                          getRandomFloat(0, 1, MT)};  // tie-breaker
-    U.push_back(a);
+    A.push_back(a);
     occupied_now[s->id] = a;
   }
   solution.add(P->getConfigStart());
@@ -44,8 +44,8 @@ void PIBT::run()
     info(" ", "elapsed:", getSolverElapsedTime(), ", timestep:", timestep);
 
     // planning
-    std::sort(U.begin(), U.end(), compare);
-    for (auto a : U) {
+    std::sort(A.begin(), A.end(), compare);
+    for (auto a : A) {
       // if the agent has next location, then skip
       if (a->v_next == nullptr) {
         // determine its next location
@@ -56,7 +56,7 @@ void PIBT::run()
     // acting
     bool check_goal_cond = true;
     Config config(P->getNum(), nullptr);
-    for (auto a : U) {
+    for (auto a : A) {
       // clear
       if (occupied_now[a->v_now->id] == a) occupied_now[a->v_now->id] = nullptr;
       occupied_next[a->v_next->id] = nullptr;
@@ -90,7 +90,7 @@ void PIBT::run()
   }
 
   // memory clear
-  for (auto a : U) delete a;
+  for (auto a : A) delete a;
 }
 
 bool PIBT::funcPIBT(Agent* ai, Agent* aj)

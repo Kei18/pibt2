@@ -14,20 +14,14 @@ void PIBT_MAPD::run()
 {
   // compare priority of agents
   auto compare = [](Agent* a, const Agent* b) {
-    if (a->task != nullptr && b->task == nullptr) return false;
-    if (a->task == nullptr && b->task != nullptr) return true;
+    if (a->task != nullptr && b->task == nullptr) return true;
+    if (a->task == nullptr && b->task != nullptr) return false;
 
-    if (a->elapsed != b->elapsed) return a->elapsed < b->elapsed;
+    if (a->elapsed != b->elapsed) return a->elapsed > b->elapsed;
     // use initial distance
-    return a->tie_breaker < b->tie_breaker;
+    return a->tie_breaker > b->tie_breaker;
   };
-
-  // agents have not decided their next locations
-  std::priority_queue<Agent*, Agents, decltype(compare)> undecided(compare);
-  // agents have already decided their next locations
-  std::vector<Agent*> decided;
-  // whole agents
-  std::vector<Agent*> A;
+  Agents A;
 
   // initialize
   for (int i = 0; i < P->getNum(); ++i) {
@@ -42,9 +36,8 @@ void PIBT_MAPD::run()
         nullptr,                   // task (assigned)
         nullptr,                   // target_task (if free)
     };
-    undecided.push(a);
-    occupied_now[s->id] = a;
     A.push_back(a);
+    occupied_now[s->id] = a;
   }
   solution.add(P->getConfigStart());
 
@@ -119,22 +112,20 @@ void PIBT_MAPD::run()
     }
 
     // planning
-    while (!undecided.empty()) {
-      // pickup the agent with highest priority
-      Agent* a = undecided.top();
-      undecided.pop();
-
-      // if the agent has next location, then skip
-      if (a->v_next == nullptr) {
-        // determine its next location
-        funcPIBT(a);
+    {
+      std::sort(A.begin(), A.end(), compare);
+      for (auto a : A) {
+        // if the agent has next location, then skip
+        if (a->v_next == nullptr) {
+          // determine its next location
+          funcPIBT(a);
+        }
       }
-      decided.push_back(a);
     }
 
     // acting
     Config config(P->getNum(), nullptr);
-    for (auto a : decided) {
+    for (auto a : A) {
       // clear
       if (occupied_now[a->v_now->id] == a) occupied_now[a->v_now->id] = nullptr;
       occupied_next[a->v_next->id] = nullptr;
@@ -147,8 +138,6 @@ void PIBT_MAPD::run()
       // reset params
       a->v_now = a->v_next;
       a->v_next = nullptr;
-      // push to priority queue
-      undecided.push(a);
 
       // update task info
       if (a->task != nullptr) {  // assigned agent
@@ -169,7 +158,6 @@ void PIBT_MAPD::run()
         }
       }
     }
-    decided.clear();
 
     // update plan
     solution.add(config);
@@ -192,11 +180,11 @@ void PIBT_MAPD::run()
 
   // align target history and plan
   {
-    Nodes targets;
-    Tasks tasks;
+    Nodes targets(P->getNum(), nullptr);
+    Tasks tasks(P->getNum(), nullptr);
     for (auto a : A) {
-      targets.push_back(a->g);
-      tasks.push_back(a->task);
+      targets[a->id] = a->g;
+      tasks[a->id] = a->task;
     }
     hist_targets.push_back(targets);
     hist_tasks.push_back(tasks);
@@ -206,84 +194,48 @@ void PIBT_MAPD::run()
   for (auto a : A) delete a;
 }
 
-bool PIBT_MAPD::funcPIBT(Agent* ai)
+bool PIBT_MAPD::funcPIBT(Agent* ai, Agent* aj)
 {
-  // decide next node
-  Node* v = planOneStep(ai);
-  while (v != nullptr) {
-    auto aj = occupied_now[v->id];
-    if (aj != nullptr) {  // someone occupies v
-      // avoid itself && allow rotations
-      if (aj != ai && aj->v_next == nullptr) {
-        // do priority inheritance and backtracking
-        if (!funcPIBT(aj)) {
-          // replan
-          v = planOneStep(ai);
-          continue;
-        }
-      }
+  // compare two nodes
+  auto compare = [&] (Node* const v, Node* const u) {
+    int d_v = pathDist(v, ai->g);
+    int d_u = pathDist(u, ai->g);
+    if (d_v != d_u) return d_v < d_u;
+    // tie break
+    if (occupied_now[v->id] != nullptr
+        && occupied_now[u->id] == nullptr) return false;
+    if (occupied_now[v->id] == nullptr
+        && occupied_now[u->id] != nullptr) return true;
+    // randomize
+    return getRandomBoolean(MT);
+  };
+
+  // get candidates
+  Nodes C = ai->v_now->neighbor;
+  C.push_back(ai->v_now);
+  std::sort(C.begin(), C.end(), compare);
+
+  for (auto u : C) {
+    // avoid conflicts
+    if (occupied_next[u->id] != nullptr) continue;
+    if (aj != nullptr && u == aj->v_now) continue;
+
+    // reserve
+    occupied_next[u->id] = ai;
+    ai->v_next = u;
+
+    auto ak = occupied_now[u->id];
+    if (ak != nullptr && ak->v_next == nullptr) {
+      if (!funcPIBT(ak, ai)) continue;  // replanning
     }
     // success to plan next one step
     return true;
   }
-  // failed to secure node, cope stuck
+
+  // failed to secure node
   occupied_next[ai->v_now->id] = ai;
   ai->v_next = ai->v_now;
   return false;
-}
-
-/*
- * no candidate node -> return nullptr
- */
-Node* PIBT_MAPD::planOneStep(Agent* a)
-{
-  Node* v = chooseNode(a);
-  if (v != nullptr) {
-    // update reservation
-    occupied_next[v->id] = a;
-    a->v_next = v;
-  }
-  return v;
-}
-
-// no candidate node -> return nullptr
-Node* PIBT_MAPD::chooseNode(Agent* a)
-{
-  // candidates
-  Nodes C = a->v_now->neighbor;
-  C.push_back(a->v_now);
-
-  // randomize
-  std::shuffle(C.begin(), C.end(), *MT);
-
-  // desired node
-  Node* v = nullptr;
-
-  // pickup one node
-  for (auto u : C) {
-    // avoid vertex conflict
-    if (occupied_next[u->id] != nullptr) continue;
-    // avoid swap conflict
-    auto a_j = occupied_now[u->id];
-    if (a_j != nullptr && a_j->v_next == a->v_now) continue;
-
-    // goal exists -> return immediately
-    if (u == a->g) return u;
-
-    // determine the next node
-    if (v == nullptr) {
-      v = u;
-    } else {
-      int c_v = pathDist(v, a->g);
-      int c_u = pathDist(u, a->g);
-      if ((c_u < c_v) || (c_u == c_v && occupied_now[v->id] != nullptr &&
-                          occupied_now[u->id] == nullptr)) {
-        v = u;
-      }
-    }
-  }
-
-  return v;
 }
 
 void PIBT_MAPD::printHelp() { printHelpWithoutOption(SOLVER_NAME); }
