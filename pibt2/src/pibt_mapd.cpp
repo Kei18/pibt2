@@ -207,12 +207,15 @@ bool PIBT_MAPD::funcPIBT(Agent* ai, Agent* aj)
     if (occupied_now[v->id] == nullptr
         && occupied_now[u->id] != nullptr) return true;
     // randomize
-    return getRandomBoolean(MT);
+    return false;
   };
 
   // get candidates
   Nodes C = ai->v_now->neighbor;
   C.push_back(ai->v_now);
+  // randomize
+  std::shuffle(C.begin(), C.end(), *MT);
+  // sort
   std::sort(C.begin(), C.end(), compare);
 
   for (auto u : C) {
