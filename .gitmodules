@@ -1,6 +1,7 @@
 [submodule "third_party/googletest"]
 	path = third_party/googletest
 	url = https://github.com/google/googletest.git
+	ignore = dirty
 [submodule "third_party/openFrameworks"]
 	path = third_party/openFrameworks
 	url = https://github.com/openframeworks/openFrameworks.git
@@ -8,3 +9,4 @@
 [submodule "third_party/grid-pathfinding"]
 	path = third_party/grid-pathfinding
 	url = https://github.com/Kei18/grid-pathfinding.git
+	ignore = dirty
