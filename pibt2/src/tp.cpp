@@ -50,7 +50,7 @@ void TP::run()
     Tasks tasks(P->getNum(), nullptr);  // for history
 
     for (auto a : A) {  // line 5
-      if (TOKEN[a->id].size() - 1 != P->getCurrentTimestep()) {
+      if ((int)TOKEN[a->id].size() - 1 != P->getCurrentTimestep()) {
         if (a->task != nullptr) {  // assigned agent
           tasks[a->id] = a->task;
           targets[a->id] =
@@ -140,7 +140,7 @@ void TP::run()
 
         // pickup loc -> delivery loc
         if (a->load_task && a->v_now == a->task->loc_delivery &&
-            P->getCurrentTimestep() + 1 == TOKEN[a->id].size() - 1) {
+            P->getCurrentTimestep() + 1 == (int)TOKEN[a->id].size() - 1) {
           // finish task
           info("   ", "finish task-", a->task->id, ": agent-", a->id, ", ",
                a->task->loc_pickup->id, " -> ", a->task->loc_delivery->id);
@@ -281,9 +281,9 @@ void TP::updatePath(int i, Node* g, std::vector<Path>& TOKEN)
     auto t = current_timestep + m->g;
     // avoid endpoints
     auto k = token_endpoints[m->v->id];
-    if (k != NIL && TOKEN[k].size() - 1 < t) return true;
+    if (k != NIL && (int)TOKEN[k].size() - 1 < t) return true;
     // avoid conflicts
-    if (CONFLICT_TABLE.size() - 1 >= t) {
+    if ((int)CONFLICT_TABLE.size() - 1 >= t) {
       // check vertex conflicts
       if (CONFLICT_TABLE[t][m->v->id] != NIL) return true;
       // check swap conflicts

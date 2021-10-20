@@ -26,11 +26,7 @@ private:
   Agents occupied_next;
 
   // result of priority inheritance: true -> valid, false -> invalid
-  bool funcPIBT(Agent* ai);
-  // plan next node
-  Node* planOneStep(Agent* a);
-  // chose one node from candidates, used in planOneStep
-  Node* chooseNode(Agent* a);
+  bool funcPIBT(Agent* ai, Agent* aj = nullptr);
 
   // main
   void run();

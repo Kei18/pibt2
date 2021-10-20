@@ -32,21 +32,29 @@ Please cite the following paper if you use the code in your published research:
 ```
 
 ## Demo
-![100 agents in arena](/material/arena_100.gif)
+![100 agents in arena](./material/arena_100.gif)
 
-![mapd in warehouse](/material/mapd.gif)
+![mapd in warehouse](./material/mapd.gif)
 
-![1000 agents in brc202d](/material/brc202d_1000.gif)
+![1000 agents in brc202d](./material/brc202d_1000.gif)
 
 ## Building
 
 ```sh
 git clone --recursive https://github.com/Kei18/pibt2.git
 cd pibt2
-mkdir build
-cd build
+mkdir build && cd build
 cmake ..
 make
+```
+
+### Docker
+
+You can also use the docker environment instead of the native one, based on Ubuntu18.04.
+
+```sh
+docker compose up -d
+docker compose exec dev bash
 ```
 
 ## Usage
