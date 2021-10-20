@@ -3,6 +3,7 @@ import re
 import glob
 import csv
 import subprocess
+import tqdm
 from datetime import datetime, timedelta, timezone
 
 def get_date_str():
@@ -40,7 +41,7 @@ def read_result(filename):
     return solved, soc, lb_soc, makespan, lb_makespan, comp_time
 
 
-MAX_TIMESTEP = 1000
+MAX_TIMESTEP = 2000
 MAX_COMP_TIME = 30000
 SOLVERS = [
     "PIBT",
@@ -55,14 +56,16 @@ MAP_NAMES = [
     "random-32-32-20.map",
 
     # large
-    # "empty-48-48.map",
-    # "random-64-64-20.map",
-    # "warehouse-20-40-10-2-2.map",
-    # "Berlin_1_256.map",
-    # "Paris_1_256.map",
+    "empty-48-48.map",
+    "random-64-64-20.map",
+    "warehouse-20-40-10-2-2.map",
+    "Berlin_1_256.map",
+    "Paris_1_256.map",
+    "den520d.map",
+    "ost003d.map",
+
+    # set step -> 2000
     # "brc202d.map",
-    # "den520d.map",
-    # "ost003d.map",
 ]
 
 if __name__ == '__main__':
@@ -86,7 +89,7 @@ if __name__ == '__main__':
         ])
 
     for solver in SOLVERS:
-        for scen_file in glob.glob("benchmark/*.scen"):
+        for scen_file in tqdm.tqdm(glob.glob("benchmark/*.scen")):
             # extract map name and scenario number
             m = re.match(r_scen_file, scen_file)
             if m:
