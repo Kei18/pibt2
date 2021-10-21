@@ -92,7 +92,8 @@ void MAPF_Solver::exec()
   if (distance_table_p == nullptr) {
     info("  pre-processing, create distance table by BFS");
     createDistanceTable();
-    info("  done, elapsed: ", getSolverElapsedTime());
+    preprocessing_comp_time = getSolverElapsedTime();
+    info("  done, elapsed: ", preprocessing_comp_time);
   }
 
   run();
@@ -220,6 +221,7 @@ void MAPF_Solver::makeLogBasicInfo(std::ofstream& log)
   log << "makespan=" << solution.getMakespan() << "\n";
   log << "lb_makespan=" << getLowerBoundMakespan() << "\n";
   log << "comp_time=" << getCompTime() << "\n";
+  log << "preprocessing_comp_time=" << preprocessing_comp_time << "\n";
 }
 
 void MAPF_Solver::makeLogSolution(std::ofstream& log)
