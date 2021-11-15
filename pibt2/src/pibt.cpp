@@ -96,15 +96,15 @@ void PIBT::run()
 bool PIBT::funcPIBT(Agent* ai, Agent* aj)
 {
   // compare two nodes
-  auto compare = [&] (Node* const v, Node* const u) {
+  auto compare = [&](Node* const v, Node* const u) {
     int d_v = pathDist(ai->id, v);
     int d_u = pathDist(ai->id, u);
     if (d_v != d_u) return d_v < d_u;
     // tie break
-    if (occupied_now[v->id] != nullptr
-        && occupied_now[u->id] == nullptr) return false;
-    if (occupied_now[v->id] == nullptr
-        && occupied_now[u->id] != nullptr) return true;
+    if (occupied_now[v->id] != nullptr && occupied_now[u->id] == nullptr)
+      return false;
+    if (occupied_now[v->id] == nullptr && occupied_now[u->id] != nullptr)
+      return true;
     return false;
   };
 

@@ -141,7 +141,7 @@ protected:
   using DistanceTable = std::vector<std::vector<int>>;  // [agent][node_id]
   DistanceTable distance_table;                         // distance table
   DistanceTable* distance_table_p;  // pointer, used in nested solvers
-  int preprocessing_comp_time;                          // computation time
+  int preprocessing_comp_time;      // computation time
 
   // -------------------------------
   // main
