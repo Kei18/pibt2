@@ -8,7 +8,7 @@ The code repository of the paper "[Priority Inheritance with Backtracking for It
 - The implementation includes both Multi-Agent Path Finding (MAPF) and Multi-Agent Pickup and Delivery (MAPD).
 - It is written in C++(17) with [CMake](https://cmake.org/) (≥v3.16) build.
 - The repository uses [Google Test](https://github.com/google/googletest) and [the original library for 2D pathfinding](https://github.com/Kei18/grid-pathfinding) as git submodules.
-- The visualizer uses [openFrameworks](https://openframeworks.cc) and works only on macOS.
+- The visualizer uses [openFrameworks](https://openframeworks.cc) and works only on macOS (as git submodule).
 - The accompanied solvers are HCA\* [1], Push and Swap [2], TP [3], and PIBT(+).
 
 | platform | status (public) | status (dev) |
@@ -193,6 +193,7 @@ The experimental scripts are written in Python3.7.
 - Maps in `maps/` are from [MAPF benchmarks](https://movingai.com/benchmarks/mapf.html).
   When you add a new map, please place it in the `maps/` directory.
 - The font in `visualizer/bin/data` is from [Google Fonts](https://fonts.google.com/).
+- Other baseline solvers are obtained from: [CBS](https://github.com/Jiaoyang-Li/CBSH2-RTC), [EECBS](https://github.com/Jiaoyang-Li/EECBS), and [BCP](https://github.com/ed-lam/bcp-mapf)
 
 ## Licence
 This software is released under the MIT License, see [LICENSE.txt](LICENCE.txt).

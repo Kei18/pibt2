@@ -1,9 +1,12 @@
 <html>
   <head>
-    <title>Iterative Refinement for Real-Time Multi-Robot Path Planning</title>
+    <title>Priority Inheritance with Backtracking for Iterative Mulit-agent Path Finding</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400&family=Roboto:wght@100&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/custom.css">
   </head>
   <body class="d-flex flex-column h-100">
@@ -11,39 +14,76 @@
     <main role="main flex-shrink-0">
       <div class="container">
 
-        <p class="h2 text-center">Iterative Refinement for Real-Time Multi-Robot Path Planning</p>
+        <p class="h1 text-center">Priority Inheritance with Backtracking<br/>for Iterative Mulit-agent Path Finding</p>
         <p class="text-center">
           <a href="https://kei18.github.io/">Keisuke Okumura</a>,
-          <a href="https://y7amura.github.io/">Yasumasa Tamura</a>
-          and <a href="https://www.coord.c.titech.ac.jp/m/defago/">Xavier Défago</a></p>
-
-        <p class="text-center mt-3">
-          <a href="https://arxiv.org/abs/2102.12331">[preprint (arXiv)]</a>
-          <a href="https://github.com/Kei18/mapf-IR">[code (GitHub)]</a>
+          Manao Machida,
+          <a href="https://www.coord.c.titech.ac.jp/m/defago/">Xavier Défago</a>,
+          and <a href="https://y7amura.github.io/">Yasumasa Tamura</a>
         </p>
 
-        <div class="text-center mt-5 video-wrapper mb-5">
-          <iframe src="https://player.vimeo.com/video/516530451" width="854" height="480" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+        <p class="text-center mt-3">
+          <a href="https://www.ijcai.org/proceedings/2019/76">[conference paper (IJCAI-19)]</a>
+          <a href="https://github.com/Kei18/pibt2">[code (GitHub)]</a>
+        </p>
+
+        <p>Important note: This is for a journal paper. We substantially updated from <a href="https://kei18.github.io/pibt/">the original repo</a> of the conference paper.</p>
+
+        <div class="row">
+          <div class="col-md-6">
+            <img alt="" src="images/arena_100.gif" class="img-fluid" style="width:100%;" />
+            <p class="text-center"><small>Multi-agent Path Finding</small></p>
+          </div>
+          <div class="col-md-6">
+            <img alt="" src="images/mapd.gif" class="img-fluid" style="width:100%;" />
+            <p class="text-center"><small>Multi-agent Pickup and Delivery</small></p>
+          </div>
         </div>
 
-        <div class="mx-auto">
+        <div class="mx-auto mt-5">
+          <p class="h5">Overview</p>
+          <div class="text-secondary">
+            <p>The Multi-Agent Path Finding (MAPF) problem consists in all agents having to move to their own destinations while avoiding collisions. In practical applications to the problem, such as for navigation in an automated warehouse, MAPF must be solved iteratively in a lifelong and online manner, ruling out any simple adaptation of offline and computationally-intensive optimal approaches. A challenge is thus to design sub-optimal and scalable algorithms with acceptable solution quality and predictable computational time that works even in lifelong situations.</p>
+            <p>To this end, we present a novel approach to iterative MAPF, that we call Priority Inheritance with Backtracking (PIBT). PIBT focuses on the adjacent movements of multiple agents relying on a simple mechanism, and hence can be applied to many domains. We prove that, regardless of their number, all agents are guaranteed to reach their destination within finite time, when the environment is a graph such that all pairs of adjacent nodes belong to a simple cycle (e.g., biconnected). Extensive experimental results over various scenarios, including real robot demon- strations, confirm that PIBT is adequate both for finding paths in large environments with many agents, as well as for conveying packages in an automated warehouse.</p>
+          </div>
+        </div>
+
+        <div class="mx-auto mt-5">
           <p class="h5">News</p>
           <ul>
-            <li>This paper has been accepted to IROS-21! (Jul. 2021)</li>
-            <li>The repo includes <a href="https://kei18.github.io/pibt/">PIBT</a> simple implementation</li>
+            <li>Not yet!</li>
           </ul>
         </div>
 
-        <div class="mx-auto">
+
+        <p class="h5 mt-5">Video</p>
+        <div class="text-center video-wrapper mb-5">
+          <iframe src="https://player.vimeo.com/video/645887407" width="854" height="480" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+        </div>
+
+        <p class="h5 mt-5">Slides</p>
+        <div class="mb-3" style="left: 0; width: 100%; height: 0; position: relative; padding-bottom: 70.5634%;">
+          <iframe src="https://speakerdeck.com/player/e3fb481327254d2fbd3d69e921c0f967" style="top: 0; left: 0; width: 100%; height: 100%; position: absolute; border: 0;" allowfullscreen scrolling="no" allow="encrypted-media;"></iframe>
+        </div>
+
+        <div class="mx-auto mt-5">
           <p class="h5">Citation</p>
-          <p>Please cite the following paper if you use the code in your published research:</p>
-          <div class="citation mb-3">
-            <pre><code>@article{okumura2021iterative,
-  title={Iterative Refinement for Real-Time Multi-Robot Path Planning},
-  author={Okumura, Keisuke and Tamura, Yasumasa and D{\'e}fago, Xavier},
-  journal={arXiv preprint arXiv:2102.12331},
-  year={2021}
+          <div class="citation mb-3 text-secondary">
+            <pre><code>title={Priority Inheritance with Backtracking for Iterative Multi-agent Path Finding},
+  author={Okumura, Keisuke and Machida, Manao and D{\'e}fago, Xavier and Tamura, Yasumasa},
+  booktitle={Proceedings of the Twenty-Eighth International Joint Conference on Artificial Intelligence, {IJCAI-19}},
+  publisher={International Joint Conferences on Artificial Intelligence Organization},
+  pages={535--542},
+  year={2019},
+  month={7},
+  doi={10.24963/ijcai.2019/76},
+  url={https://doi.org/10.24963/ijcai.2019/76}
 }</code></pre></div>
+        </div>
+
+        <div class="mx-auto mt-5">
+          <p class="h5">Contact</p>
+          <p>okumura.k [at] coord.c.titech.ac.jp</p>
         </div>
 
       </div>
@@ -51,7 +91,7 @@
 
     <footer class="footer mt-auto">
       <div class="container pt-3">
-        <p class="text-center">contact: okumura.k [at] coord.c.titech.ac.jp, &copy;2021 Keisuke Okumura</p>
+        <p class="text-center">&copy;2021 Keisuke Okumura</p>
       </div>
     </footer>
   </body>

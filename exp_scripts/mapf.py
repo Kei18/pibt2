@@ -41,7 +41,8 @@ def read_result(filename):
     return solved, soc, lb_soc, makespan, lb_makespan, comp_time
 
 
-MAX_TIMESTEP = 2000
+MAX_TIMESTEP = 1000
+# MAX_TIMESTEP = 2000  # for brc202d.map
 MAX_COMP_TIME = 30000
 SOLVERS = [
     "PIBT",

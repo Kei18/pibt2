@@ -2,6 +2,11 @@ body {
   background-color: #eee;
   color: #0e0e0e;
   padding: 20px;
+  font-family: 'Roboto Condensed', sans-serif;
+}
+
+.container {
+  width: 900px;
 }
 
 .video-wrapper {
@@ -25,4 +30,5 @@ body {
   background-color: #e1e1e163;
   padding-left: 3px;
   padding-top: 3px;
+  font-size: 14px;
 }
