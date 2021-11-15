@@ -197,15 +197,15 @@ void PIBT_MAPD::run()
 bool PIBT_MAPD::funcPIBT(Agent* ai, Agent* aj)
 {
   // compare two nodes
-  auto compare = [&] (Node* const v, Node* const u) {
+  auto compare = [&](Node* const v, Node* const u) {
     int d_v = pathDist(v, ai->g);
     int d_u = pathDist(u, ai->g);
     if (d_v != d_u) return d_v < d_u;
     // tie break
-    if (occupied_now[v->id] != nullptr
-        && occupied_now[u->id] == nullptr) return false;
-    if (occupied_now[v->id] == nullptr
-        && occupied_now[u->id] != nullptr) return true;
+    if (occupied_now[v->id] != nullptr && occupied_now[u->id] == nullptr)
+      return false;
+    if (occupied_now[v->id] == nullptr && occupied_now[u->id] != nullptr)
+      return true;
     // randomize
     return false;
   };

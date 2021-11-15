@@ -299,6 +299,6 @@ void ofApp::printKeys()
   std::cout << "- a : show single agent" << std::endl;
   std::cout << "- + : increment single agent id" << std::endl;
   std::cout << "- - : decrement single agent id" << std::endl;
-  std::cout << "- i : feeling lucky..." << std::endl;
+  std::cout << "- i : monotonic" << std::endl;
   std::cout << "- esc : terminate" << std::endl;
 }
