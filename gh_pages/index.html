@@ -23,12 +23,16 @@
         </p>
 
         <p class="text-center mt-3">
-          <a href="https://www.ijcai.org/proceedings/2019/76">[conference paper (IJCAI-19)]</a><br/>
-          <a href="https://github.com/Kei18/pibt2">[code (GitHub)]</a>
+          <a href="https://arxiv.org/abs/1901.11282">[preprint for jounal]</a>
+          <a href="https://www.ijcai.org/proceedings/2019/76">[conference paper (IJCAI-19)]</a>
+        </p>
+
+        <p class="text-center mt-3">
+          <a href="https://github.com/Kei18/pibt2">[code]</a>
           <a href="https://github.com/Kei18/toio-pibt">[robot implementation (toio)]</a>
         </p>
 
-        <p>Important note: This is for a journal paper (under review). We substantially updated from <a href="https://kei18.github.io/pibt/">the original repo</a> of the conference paper.</p>
+        <p>Important note: This page is for a journal paper (under review). We substantially updated from <a href="https://kei18.github.io/pibt/">the original repo</a> of the conference paper.</p>
 
         <div class="row">
           <div class="col-md-4">
@@ -48,8 +52,8 @@
         <div class="mx-auto mt-5">
           <p class="h5">Overview</p>
           <div class="text-secondary">
-            <p>The Multi-Agent Path Finding (MAPF) problem consists in all agents having to move to their own destinations while avoiding collisions. In practical applications to the problem, such as for navigation in an automated warehouse, MAPF must be solved iteratively in a lifelong and online manner, ruling out any simple adaptation of offline and computationally-intensive optimal approaches. A challenge is thus to design sub-optimal and scalable algorithms with acceptable solution quality and predictable computational time that works even in lifelong situations.</p>
-            <p>To this end, we present a novel approach to iterative MAPF, that we call Priority Inheritance with Backtracking (PIBT). PIBT focuses on the adjacent movements of multiple agents relying on a simple mechanism, and hence can be applied to many domains. We prove that, regardless of their number, all agents are guaranteed to reach their destination within finite time, when the environment is a graph such that all pairs of adjacent nodes belong to a simple cycle (e.g., biconnected). Extensive experimental results over various scenarios, including real robot demon- strations, confirm that PIBT is adequate both for finding paths in large environments with many agents, as well as for conveying packages in an automated warehouse.</p>
+            <p>In the Multi-Agent Path Finding (MAPF) problem, a set of agents moving on a graph must reach their own respective destinations without inter-agent collisions. In practical MAPF applications such as navigation in automated warehouses, where occasionally there are hundreds or more agents, MAPF must be solved iteratively online on a lifelong basis. Such scenarios rule out simple adaptations of offline compute-intensive optimal approaches; therefore, scalable sub-optimal algorithms are appealing for such settings. Ideal scalable algorithms are applicable to iterative scenarios and output plausible solutions in predictable computation time.</p>
+            <p>For the aforementioned purpose, in this study, a novel algorithm named Priority Inheritance with Backtracking (PIBT) is presented to solve MAPF iteratively. PIBT relies on an adaptive prioritization scheme to focus on the adjacent movements of multiple agents; hence it can be applied to several domains. We prove that, regardless of their number, all agents are guaranteed to reach their destination within a finite time when the environment is a graph such that all pairs of adjacent nodes belong to a simple cycle (e.g., biconnected). Experimental results covering various scenarios, including real robot demonstration, reveal the benefits of the proposed method. Even with hundreds of agents, PIBT yields acceptable solutions immediately and can solve large instances that other de facto MAPF approaches cannot. In addition, PIBT outperforms an existing approach on an iterative scenario of conveying packages in an automated warehouse in both runtime and solution quality.</p>
           </div>
         </div>
 
