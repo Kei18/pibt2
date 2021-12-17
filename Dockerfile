@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 RUN apt-get -y update
-RUN apt-get -y install wget libssl-dev
+RUN apt-get -y install wget libssl-dev build-essential
 
 WORKDIR /tmp
 
