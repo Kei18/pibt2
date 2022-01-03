@@ -107,16 +107,18 @@ PIBT
 
 You can find details and explanations for all parameters with:
 ```sh
-./mapf --help
+./mapd --help
 ```
 
 Please see `instances/mapd/sample.txt` for parameters of instances.
 
-When you specify pickup and delivery locations (and non-task endpoints), put a special file in `map/`. An example is `map/warehouse.map.pd`. The rule is the following:
-  - [@T]: obstacles
-  - [psa]: pickup locations
-  - [dsa] delivery locations
-  - [ea] endpoints
+When you specify pickup and delivery locations (and non-task endpoints), put a special file in `map/`. An example is `map/warehouse.map.pd`.
+The rule is the following:
+
+- \[\@T\]: obstacles
+- [psa]: pickup locations
+- [dsa] delivery locations
+- [ea] endpoints
 
 <details><summary>Output File</summary>
 
