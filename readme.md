@@ -2,7 +2,7 @@ pibt2
 ===
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
-The code repository of the paper "[Priority Inheritance with Backtracking for Iterative Multi-agent Path Finding](https://kei18.github.io/pibt2/)" (the journal version).
+The code repository of the paper "[Priority Inheritance with Backtracking for Iterative Multi-agent Path Finding](https://kei18.github.io/pibt2/)" (AIJ-22; the journal version).
 
 - There is [an old implementation](https://github.com/Kei18/pibt) for [the conference paper (IJCAI-19)](https://www.ijcai.org/proceedings/2019/76); this repo is much faster and cleaner.
 - The implementation includes both Multi-Agent Path Finding (MAPF) and Multi-Agent Pickup and Delivery (MAPD).
@@ -18,6 +18,12 @@ The code repository of the paper "[Priority Inheritance with Backtracking for It
 
 Please cite the following paper if you use the code in your published research:
 ```
+# AIJ-22
+
+(in press)
+
+# IJCAI-19
+
 @inproceedings{okumura2019priority,
   title={Priority Inheritance with Backtracking for Iterative Multi-agent Path Finding},
   author={Okumura, Keisuke and Machida, Manao and D{\'e}fago, Xavier and Tamura, Yasumasa},
