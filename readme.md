@@ -4,6 +4,8 @@ pibt2
 
 The code repository of the paper "[Priority Inheritance with Backtracking for Iterative Multi-agent Path Finding](https://kei18.github.io/pibt2/)" (AIJ-22; the journal version).
 
+Updated (2023-07-26): [A minimal Python implementation](https://github.com/Kei18/pypibt) is now available.
+
 - There is [an old implementation](https://github.com/Kei18/pibt) for [the conference paper (IJCAI-19)](https://www.ijcai.org/proceedings/2019/76); this repo is much faster and cleaner.
 - The implementation includes both Multi-Agent Path Finding (MAPF) and Multi-Agent Pickup and Delivery (MAPD).
 - It is written in C++(17) with [CMake](https://cmake.org/) (≥v3.16) build.
@@ -20,7 +22,15 @@ Please cite the following paper if you use the code in your published research:
 ```
 # AIJ-22
 
-(in press)
+@article{okumura2022priority,
+  title = {Priority Inheritance with Backtracking for Iterative Multi-agent Path Finding},
+  journal = {Artificial Intelligence},
+  pages = {103752},
+  year = {2022},
+  issn = {0004-3702},
+  doi = {https://doi.org/10.1016/j.artint.2022.103752},
+  author = {Keisuke Okumura and Manao Machida and Xavier Défago and Yasumasa Tamura},
+}
 
 # IJCAI-19
 
